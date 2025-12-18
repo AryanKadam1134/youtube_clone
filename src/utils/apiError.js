@@ -15,3 +15,7 @@ class apiError extends Error {
 }
 
 export default apiError;
+
+
+// usecase
+// apiError(400, "message")
