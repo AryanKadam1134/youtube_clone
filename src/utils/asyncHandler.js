@@ -15,9 +15,9 @@ const asynchandler = (func) => {
     Promise.resolve(func(req, res, next)).catch((error) => {
       res
         .status(500)
-        .json({ status: false, message: error.message });
+        .json({ status: error.statusCode, message: error.message });
 
-      next(error);
+      // next(error);
     });
   };
 };
