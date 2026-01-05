@@ -17,8 +17,8 @@ const generateAccessAndRefreshToken = async (userId) => {
     // Problem is here
     await user.save({ validateBeforeSave: false });
 
-    console.log("refreshToken: ", refreshToken);
-    console.log("accessToken: ", accessToken);
+    // console.log("refreshToken: ", refreshToken);
+    // console.log("accessToken: ", accessToken);
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -198,14 +198,12 @@ const refeshAccessToken = asynchandler(async (req, res, next) => {
 
   console.log("incomingRefreshToken: ", incomingRefreshToken);
 
-
   const decodedToken = jwt.verify(
     incomingRefreshToken,
     process.env.REFRESH_TOKEN_SECRET
   );
 
   console.log("decodedToken: ", decodedToken);
-
 
   const user = await User.findById(decodedToken._id);
 
@@ -241,4 +239,106 @@ const refeshAccessToken = asynchandler(async (req, res, next) => {
     );
 });
 
-export { registerUser, loginUser, logoutUser, refeshAccessToken };
+const changeUserPassword = asynchandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!(oldPassword || newPassword)) {
+    throw new apiError(400, "Invalid Credentials!");
+  }
+
+  // console.log("oldPassword: ", oldPassword);
+  // console.log("newPassword: ", newPassword);
+
+  const userId = req.user._id;
+  // console.log("req.user: ", req.user);
+  console.log("userId: ", userId);
+
+  const userExists = await User.findById(userId);
+
+  if (!userExists) {
+    throw new apiError(400, "Unauthorised Access!");
+  }
+
+  const isPasswordCorrect = await userExists.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new apiError(400, "Incorrect Password!");
+  }
+
+  userExists.password = newPassword;
+
+  await userExists.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new apiRes(200, {}, "Password changed successfully!"));
+});
+
+const getCurrentUser = asynchandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new apiRes(201, req.user, "Current User fetched Successfully!"));
+});
+
+const changeUserDetails = asynchandler(async (req, res) => {
+  const updatedFields = {};
+
+  const { username, fullName, email } = req.body;
+
+  if (username) updatedFields.username = username;
+  if (fullName) updatedFields.fullName = fullName;
+  if (email) updatedFields.email = email;
+
+  if (Object.keys(updatedFields).length === 0) {
+    throw new apiError(400, "No fields provided to update");
+  }
+
+  const userExists = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: updatedFields,
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(new apiRes(200, userExists, "User Details changed successfully!"));
+});
+
+const changeUserAvatar = asynchandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+
+  if (!avatarLocalPath) {
+    throw new apiError(400, "Invalid File Path!");
+  }
+
+  const avatar = await uploadToCloudinary(avatarLocalPath);
+
+  if (!avatar?.url) {
+    throw new apiError(400, "Error while updating avatar file on Cloudinary!");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar?.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  res.status(200).json(200, user, "User Avatar Changed Successfully!");
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refeshAccessToken,
+  changeUserPassword,
+  getCurrentUser,
+  changeUserDetails,
+  changeUserAvatar,
+};

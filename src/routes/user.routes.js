@@ -4,6 +4,10 @@ import {
   loginUser,
   logoutUser,
   refeshAccessToken,
+  changeUserPassword,
+  getCurrentUser,
+  changeUserDetails,
+  changeUserAvatar,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -29,5 +33,19 @@ userRouter.route("/login").post(loginUser);
 userRouter.route("/logout").post(verifyJWT, logoutUser);
 
 userRouter.route("/refreshtoken").post(refeshAccessToken);
+
+userRouter.route("/change_password").post(verifyJWT, changeUserPassword);
+
+userRouter.route("/currentUser").get(verifyJWT, getCurrentUser);
+
+userRouter.route("/changeUserDetails").post(verifyJWT, changeUserDetails);
+
+userRouter
+  .route("/changeUserAvatar")
+  .post(
+    upload.single({ name: "avatar", maxCount: 1 }),
+    verifyJWT,
+    changeUserAvatar
+  );
 
 export default userRouter;
