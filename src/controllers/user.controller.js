@@ -327,9 +327,80 @@ const changeUserAvatar = asynchandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  ).select("-password -refreshToken");
 
-  res.status(200).json(200, user, "User Avatar Changed Successfully!");
+  res
+    .status(200)
+    .json(new apiRes(200, user, "User Avatar Changed Successfully!"));
+});
+
+const getUserChannelDetails = asynchandler(async (req, res) => {
+  const { username } = req.body;
+
+  if (!username.trim()) {
+    throw new apiError(400, "Username Invalid!");
+  }
+
+  const channel = await User.aggregate([
+    {
+      $match: username?.toLowerCase(),
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        subscribedChannelsCount: {
+          $size: "$subscribedTo",
+        },
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscribers"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        email: 1,
+        avatar: 1,
+        coverImage: 1,
+        subscribers: 1,
+        subscribedTo: 1,
+        isSubscribed: 1,
+      },
+    },
+  ]);
+
+  if (!channel?.length) {
+    throw new apiError(500, "Error while fetching Channel!");
+  }
+
+  console.log("Channel: ", channel);
+
+  res
+    .status(200)
+    .json(new apiRes(200, channel[0], "Channel is fetched Successfuly!"));
 });
 
 export {
@@ -341,4 +412,5 @@ export {
   getCurrentUser,
   changeUserDetails,
   changeUserAvatar,
+  getUserChannelDetails,
 };

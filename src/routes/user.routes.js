@@ -8,6 +8,7 @@ import {
   getCurrentUser,
   changeUserDetails,
   changeUserAvatar,
+  getUserChannelDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -42,10 +43,10 @@ userRouter.route("/changeUserDetails").post(verifyJWT, changeUserDetails);
 
 userRouter
   .route("/changeUserAvatar")
-  .post(
-    upload.single({ name: "avatar", maxCount: 1 }),
-    verifyJWT,
-    changeUserAvatar
-  );
+  .post(verifyJWT, upload.single("avatar"), changeUserAvatar);
+
+userRouter
+  .route("/getUserChannelDetails")
+  .post(verifyJWT, getUserChannelDetails);
 
 export default userRouter;
