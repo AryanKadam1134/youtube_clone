@@ -1,9 +1,16 @@
-import asynchandler from "../utils/asyncHandler.js";
-import apiError from "../utils/apiError.js";
-import apiRes from "../utils/apiRes.js";
-import { User } from "../models/user.model.js";
-import uploadToCloudinary from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+
+import apiRes from "../utils/apiRes.js";
+import apiError from "../utils/apiError.js";
+import asynchandler from "../utils/asyncHandler.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
+
+import { User } from "../models/user.model.js";
+import { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -14,7 +21,6 @@ const generateAccessAndRefreshToken = async (userId) => {
     user.refreshToken = refreshToken;
     console.log("userId: ", userId);
 
-    // Problem is here
     await user.save({ validateBeforeSave: false });
 
     // console.log("refreshToken: ", refreshToken);
@@ -22,12 +28,8 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    console.log("error: ", error);
-
-    throw new apiError(
-      501,
-      "Something went wrong while generating access and refresh token"
-    );
+    console.log("Error generating Access token and Refresh token: ", error);
+    throw new apiError(501, "Couldn't generate Refresh token and Access token");
   }
 };
 
@@ -47,7 +49,7 @@ const registerUser = asynchandler(async (req, res, next) => {
 
   // console.log("Email: ", email);
   // console.log("Password: ", password);
-  console.log("Request through Postman: ", req.body);
+  // console.log("Request through Postman: ", req.body);
 
   // 2. Done
   if (
@@ -62,14 +64,14 @@ const registerUser = asynchandler(async (req, res, next) => {
   });
 
   if (userExists) {
-    throw new apiError(409, "User with username or email already exists!");
+    throw new apiError(409, "User already exists with same email or username!");
   }
 
   // 4. Done
   const avatarLocalPath = req.files?.avatar[0]?.path;
   const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-  console.log("Cloudinary files: ", req?.files);
+  // console.log("Cloudinary files: ", req?.files);
 
   // 5. Done
   if (!avatarLocalPath) {
@@ -80,14 +82,24 @@ const registerUser = asynchandler(async (req, res, next) => {
   const coverImageUploaded = await uploadToCloudinary(coverImageLocalPath);
 
   if (!avatarUploaded) {
-    throw new apiError(400, "avatar field is required!"); // Cloudinary check
+    throw new apiError(404, "uplaoded avatar url not found!"); // Cloudinary check
   }
 
   // 6. Done
   const user = await User.create({
     fullName,
-    avatar: avatarUploaded?.url,
-    coverImage: coverImageUploaded?.url || "",
+    avatar: {
+      url: avatarUploaded?.secure_url,
+      public_id: avatarUploaded?.public_id,
+      resource_type: avatarUploaded?.resource_type,
+    },
+    coverImage: coverImageUploaded
+      ? {
+          url: coverImageUploaded?.secure_url,
+          public_id: coverImageUploaded?.public_id,
+          resource_type: coverImageUploaded?.resource_type,
+        }
+      : undefined,
     username: username.toLowerCase(),
     email,
     password,
@@ -99,7 +111,7 @@ const registerUser = asynchandler(async (req, res, next) => {
   );
 
   if (!createdUser) {
-    throw new apiError(500, "Error while creating the user!");
+    throw new apiError(500, "Error creating user!");
   }
 
   return res
@@ -130,14 +142,14 @@ const loginUser = asynchandler(async (req, res, next) => {
   });
 
   if (!userExist) {
-    throw new apiError(401, "user does not exist!");
+    throw new apiError(404, "user not found!");
   }
 
   // 4. Done
   const isPasswordCorrect = await userExist.isPasswordCorrect(password);
 
   if (!isPasswordCorrect) {
-    throw new apiError(402, "Password Invalid!");
+    throw new apiError(400, "Invalid password!");
   }
 
   // 5. Done
@@ -146,7 +158,7 @@ const loginUser = asynchandler(async (req, res, next) => {
   );
 
   if (!accessToken || !refreshToken) {
-    throw new apiError(500, "Couldn't get accestoken and refreshToken");
+    throw new apiError(500, "Couldn't get accestoken or refreshToken");
   }
 
   // 6. Done
@@ -168,7 +180,7 @@ const loginUser = asynchandler(async (req, res, next) => {
 
 const logoutUser = asynchandler(async (req, res) => {
   await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set: { refreshToken: undefined },
     },
@@ -186,14 +198,14 @@ const logoutUser = asynchandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new apiRes(200, {}, "User Logged Out"));
+    .json(new apiRes(200, {}, "user logged out!"));
 });
 
 const refeshAccessToken = asynchandler(async (req, res, next) => {
   const incomingRefreshToken = req.cookies?.refreshToken;
 
   if (!incomingRefreshToken) {
-    throw new apiError(401, "bad request!");
+    throw new apiError(401, "Invalid Token!");
   }
 
   console.log("incomingRefreshToken: ", incomingRefreshToken);
@@ -208,10 +220,10 @@ const refeshAccessToken = asynchandler(async (req, res, next) => {
   const user = await User.findById(decodedToken._id);
 
   if (!user) {
-    throw new apiError(401, "Invalid token!");
+    throw new apiError(401, "user not found!, Invalid Token!");
   }
 
-  console.log("User: ", user);
+  // console.log("User: ", user);
 
   if (incomingRefreshToken !== user?.refreshToken) {
     throw new apiError(401, "Refresh token is Expired or used!");
@@ -251,23 +263,23 @@ const changeUserPassword = asynchandler(async (req, res) => {
 
   const userId = req.user._id;
   // console.log("req.user: ", req.user);
-  console.log("userId: ", userId);
+  // console.log("userId: ", userId);
 
-  const userExists = await User.findById(userId);
+  const loggedUser = await User.findById(userId);
 
-  if (!userExists) {
-    throw new apiError(400, "Unauthorised Access!");
+  if (!loggedUser) {
+    throw new apiError(400, "user not found!, Invalid Credentials!");
   }
 
-  const isPasswordCorrect = await userExists.isPasswordCorrect(oldPassword);
+  const isPasswordCorrect = await loggedUser.isPasswordCorrect(oldPassword);
 
   if (!isPasswordCorrect) {
     throw new apiError(400, "Incorrect Password!");
   }
 
-  userExists.password = newPassword;
+  loggedUser.password = newPassword;
 
-  await userExists.save({ validateBeforeSave: false });
+  await loggedUser.save({ validateBeforeSave: false });
 
   return res
     .status(200)
@@ -280,7 +292,7 @@ const getCurrentUser = asynchandler(async (req, res) => {
     .json(new apiRes(201, req.user, "Current User fetched Successfully!"));
 });
 
-const changeUserDetails = asynchandler(async (req, res) => {
+const updateUserDetails = asynchandler(async (req, res) => {
   const updatedFields = {};
 
   const { username, fullName, email } = req.body;
@@ -306,24 +318,88 @@ const changeUserDetails = asynchandler(async (req, res) => {
     .json(new apiRes(200, userExists, "User Details changed successfully!"));
 });
 
-const changeUserAvatar = asynchandler(async (req, res) => {
+const updateUserAvatar = asynchandler(async (req, res) => {
+  // Get _id form token
+  const userId = req.user?._id;
+
+  // Get Logged User
+  const loggedUser = await User.findById(userId);
+
+  if (!loggedUser) {
+    throw new apiError(401, "Unauthorised Access!");
+  }
+
+  // Get File Path
   const avatarLocalPath = req.file?.path;
 
   if (!avatarLocalPath) {
     throw new apiError(400, "Invalid File Path!");
   }
 
-  const avatar = await uploadToCloudinary(avatarLocalPath);
+  // Upload to Cloudinary
+  const updatedAvatar = await uploadToCloudinary(avatarLocalPath);
 
-  if (!avatar?.url) {
-    throw new apiError(400, "Error while updating avatar file on Cloudinary!");
+  if (!updatedAvatar?.secure_url) {
+    throw new apiError(500, "Error while updating Avatar on Cloudinary!");
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
+  // Delete the old image
+  if (loggedUser?.avatar?.public_id) deleteFromCloudinary(loggedUser?.avatar);
+
+  // Update the User
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
     {
       $set: {
-        avatar: avatar?.url,
+        avatar: {
+          url: updatedAvatar?.secure_url,
+          public_id: updatedAvatar?.public_id,
+          resource_type: updatedAvatar?.resource_type,
+        },
+      },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  // Send Response
+  res
+    .status(200)
+    .json(new apiRes(200, updatedUser, "User Avatar changed Successfully!"));
+});
+
+const updateUserCoverImage = asynchandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  const loggedUser = await User.findById(userId);
+
+  if (!loggedUser) {
+    throw new apiError(401, "Unauthorised Access!");
+  }
+
+  const coverImageLocalPath = req.file?.path;
+
+  if (!coverImageLocalPath) {
+    throw new apiError(400, "Invalid File Path!");
+  }
+
+  const updatedCoverImage = await uploadToCloudinary(coverImageLocalPath);
+
+  if (!updatedCoverImage?.secure_url) {
+    throw new apiError(400, "Error while updating Cover Image on Cloudinary!");
+  }
+
+  if (loggedUser?.coverImage?.public_id)
+    deleteFromCloudinary(loggedUser?.coverImage);
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        coverImage: {
+          url: updatedCoverImage?.secure_url,
+          public_id: updatedCoverImage?.public_id,
+          resource_type: updatedCoverImage?.resource_type,
+        },
       },
     },
     { new: true }
@@ -331,7 +407,7 @@ const changeUserAvatar = asynchandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new apiRes(200, user, "User Avatar Changed Successfully!"));
+    .json(new apiRes(200, user, "User Cover Image changed Successfully!"));
 });
 
 const getUserChannelDetails = asynchandler(async (req, res) => {
@@ -403,6 +479,74 @@ const getUserChannelDetails = asynchandler(async (req, res) => {
     .json(new apiRes(200, channel[0], "Channel is fetched Successfuly!"));
 });
 
+const getUserWatchHistory = asynchandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  const loggedUser = await User.findById(userId);
+
+  if (!loggedUser) {
+    throw new apiError(401, "user not found! Invalid Token!");
+  }
+
+  const history = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    // Into users
+    {
+      $lookup: {
+        form: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory",
+        pipeline: [
+          // Into videos
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                // Into users again
+                {
+                  $project: {
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  if (!history?.length) {
+    throw new apiError(500, "Error fetching Watch History!");
+  }
+
+  res
+    .status(200)
+    .json(
+      new apiRes(
+        200,
+        history[0].watchHistory,
+        "Watch History fetched successfully!"
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -410,7 +554,8 @@ export {
   refeshAccessToken,
   changeUserPassword,
   getCurrentUser,
-  changeUserDetails,
-  changeUserAvatar,
+  updateUserDetails,
+  updateUserAvatar,
+  updateUserCoverImage,
   getUserChannelDetails,
 };

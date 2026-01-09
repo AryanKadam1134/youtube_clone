@@ -31,12 +31,27 @@ const userSchema = new Schema(
     },
     avatar: {
       // Couldinary
-      type: String,
-      required: true,
+      url: {
+        type: String,
+        required: true,
+      },
+      public_id: {
+        type: String,
+        required: true,
+      },
+      resource_type: {
+        type: String,
+        default: "image",
+      },
     },
     coverImage: {
       // Couldinary
-      type: String,
+      url: String,
+      public_id: String,
+      resource_type: {
+        type: String,
+        default: "image",
+      },
     },
     watchHistory: [
       {

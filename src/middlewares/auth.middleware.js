@@ -11,7 +11,7 @@ export const verifyJWT = asynchandler(async (req, res, next) => {
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new apiError(401, "Unauthorized request");
+      throw new apiError(401, "Token missing!");
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET); // This give use the decodedToken which contains the user id and other information
@@ -21,13 +21,13 @@ export const verifyJWT = asynchandler(async (req, res, next) => {
     );
 
     if (!user) {
-      throw new Error(402, "Invalid Access token");
+      throw new Error(404, "user not found!, Invalid Access Token!");
     }
 
     req.user = user;
 
     next();
   } catch (error) {
-    throw new apiError(403, error || "Invald Access token");
+    throw new apiError(500, "Error while verifying user!");
   }
 });

@@ -6,8 +6,9 @@ import {
   refeshAccessToken,
   changeUserPassword,
   getCurrentUser,
-  changeUserDetails,
-  changeUserAvatar,
+  updateUserDetails,
+  updateUserAvatar,
+  updateUserCoverImage,
   getUserChannelDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -37,13 +38,17 @@ userRouter.route("/refreshtoken").post(refeshAccessToken);
 
 userRouter.route("/change_password").post(verifyJWT, changeUserPassword);
 
-userRouter.route("/currentUser").get(verifyJWT, getCurrentUser);
+userRouter.route("/getCurrentUser").get(verifyJWT, getCurrentUser);
 
-userRouter.route("/changeUserDetails").post(verifyJWT, changeUserDetails);
+userRouter.route("/updateUserDetails").post(verifyJWT, updateUserDetails);
 
 userRouter
-  .route("/changeUserAvatar")
-  .post(verifyJWT, upload.single("avatar"), changeUserAvatar);
+  .route("/updateUserAvatar")
+  .post(verifyJWT, upload.single("avatar"), updateUserAvatar);
+
+userRouter
+  .route("/updateUserCoverImage")
+  .post(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
 userRouter
   .route("/getUserChannelDetails")
