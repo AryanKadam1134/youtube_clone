@@ -9,7 +9,6 @@ import {
 } from "../utils/cloudinary.js";
 
 import { User } from "../models/user.model.js";
-import { mongo } from "mongoose";
 import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {

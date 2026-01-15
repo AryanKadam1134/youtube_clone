@@ -17,19 +17,39 @@ const videoSchema = new Schema(
       required: true,
     },
     videoFile: {
-      // Cloudinary URL
-      type: String,
-      required: true,
+      // Couldinary
+      url: {
+        type: String,
+        required: true,
+      },
+      public_id: {
+        type: String,
+        required: true,
+      },
+      resource_type: {
+        type: String,
+        default: "video",
+      },
     },
     duration: {
       // Cloudinary URL
       type: Number,
       required: true,
     },
-
     thumbnail: {
-      type: String,
-      required: true,
+      // Couldinary
+      url: {
+        type: String,
+        required: true,
+      },
+      public_id: {
+        type: String,
+        required: true,
+      },
+      resource_type: {
+        type: String,
+        default: "image",
+      },
     },
     views: {
       type: Number,
@@ -41,7 +61,7 @@ const videoSchema = new Schema(
       default: true,
     },
   },
-  { timestamps: ture }
+  { timestamps: true }
 );
 
 videoSchema.plugin(mongooseAggregatePaginate);
