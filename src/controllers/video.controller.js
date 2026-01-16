@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import apiRes from "../utils/apiRes.js";
 import apiError from "../utils/apiError.js";
 import asynchandler from "../utils/asyncHandler.js";
+
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -19,9 +20,7 @@ const uploadVideo = asynchandler(async (req, res) => {
 
   const userId = req.user?._id;
 
-  const loggedUser = await User.findById(userId);
-
-  if (!loggedUser) {
+  if (!userId) {
     throw new apiError(401, "user not found! Invalid Token!");
   }
 
@@ -82,13 +81,73 @@ const uploadVideo = asynchandler(async (req, res) => {
     .json(new apiRes(200, createdVideo, "Video uplaoded succesfully!"));
 });
 
+// Update logged User video details
+const updateVideoDetails = asynchandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  const updatedFields = {};
+
+  if (!userId) {
+    throw new apiError(401, "User not found! Unauthorised Access!");
+  }
+
+  // Get video_id
+  const { video_id, title, description, isPublished } = req.body;
+
+  if (!video_id) {
+    throw new apiError(400, "video_id is required!");
+  }
+
+  // Later also check if isPublished is undefined or null the api still works
+  if (!(title || description || isPublished)) {
+    throw new apiError(401, "All fields cannot be empty!");
+  }
+
+  const checkBoolean = Boolean(isPublished);
+
+  if (typeof checkBoolean !== "boolean") {
+    throw new apiError(400, "isPublished should be a boolean value!");
+  }
+
+  const parsedIsPublished =
+    (isPublished == "true" && true) || (isPublished == "false" && false);
+
+  if (title) updatedFields.title = title;
+  if (description) updatedFields.description = description;
+  if (isPublished) updatedFields.isPublished = parsedIsPublished;
+
+  const video = await Video.findById(video_id);
+
+  if (!video) {
+    throw new apiError(404, "Video not found");
+  }
+
+  // Check if the user is the owner of the video
+  if (video?.owner?.toString() !== userId?.toString()) {
+    throw new apiError(403, "You are not allowed to update this video details");
+  }
+
+  const updatedVideo = await Video.findByIdAndUpdate(
+    video_id,
+    {
+      $set: updatedFields,
+    },
+    { new: true }
+  );
+
+  if (!updatedVideo) {
+    throw new apiError(400, "Couldn't update video details!");
+  }
+
+  res
+    .status(200)
+    .json(new apiRes(200, updatedVideo, "Video Details updated successfully!"));
+});
+
 const deleteVideo = asynchandler(async (req, res) => {
   const userId = req.user?._id;
 
-  // Check Logged User
-  const loggedUser = await User.findById(userId);
-
-  if (!loggedUser) {
+  if (!userId) {
     throw new apiError(401, "User not found! Unauthorised Access!");
   }
 
@@ -122,6 +181,7 @@ const deleteVideo = asynchandler(async (req, res) => {
   res.status(200).json(new apiRes(200, {}, "Video Deleted Successfully!"));
 });
 
+// Contains all the videos uploaded by users
 const getAllVideos = asynchandler(async (req, res) => {
   const videos = await Video.aggregate([
     {
@@ -163,13 +223,8 @@ const getAllVideos = asynchandler(async (req, res) => {
   res.status(200).json(new apiRes(200, videos, "Videos fetched successfully!"));
 });
 
-const getChannelVideos = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(400, "User not found! Unauthorised Access!");
-  }
-
+// Fetch other User Channel Videos
+const getUserChannelVideos = asynchandler(async (req, res) => {
   const { channelUserId } = req.body;
 
   const channelUser = await User.findById(channelUserId);
@@ -218,81 +273,97 @@ const getChannelVideos = asynchandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new apiRes(200, userVideos, "User Video fetched successfully!"));
+    .json(
+      new apiRes(
+        200,
+        { videos: userVideos },
+        "User Video fetched successfully!"
+      )
+    );
 });
 
-const updateVideoDetails = asynchandler(async (req, res) => {
+// Fetch other User Channel Videos
+const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
   const userId = req.user?._id;
 
-  const updatedFields = {};
-
-  // Check Logged User
-  const loggedUser = await User.findById(userId);
-
-  if (!loggedUser) {
+  if (!userId) {
     throw new apiError(401, "User not found! Unauthorised Access!");
   }
 
-  // Get video_id
-  const { video_id, title, description, isPublished } = req.body;
-
-  if (!video_id) {
-    throw new apiError(400, "video_id is required!");
-  }
-
-  // Later also check if isPublished is undefined or null the api still works
-  if (!(title || description || isPublished)) {
-    throw new apiError(401, "All fields cannot be empty!");
-  }
-
-  const checkBoolean = Boolean(isPublished);
-
-  if (typeof checkBoolean !== "boolean") {
-    throw new apiError(400, "isPublished should be a boolean value!");
-  }
-
-  const parsedIsPublished =
-    (isPublished == "true" && true) || (isPublished == "false" && false);
-
-  if (title) updatedFields.title = title;
-  if (description) updatedFields.description = description;
-  if (isPublished) updatedFields.isPublished = parsedIsPublished;
-
-  const video = await Video.findById(video_id);
-
-  if (!video) {
-    throw new apiError(404, "Video not found");
-  }
-
-  if (video?.owner?.toString() !== userId?.toString()) {
-    throw new apiError(403, "You are not allowed to update this video details");
-  }
-
-  const updatedVideo = await Video.findByIdAndUpdate(
-    video_id,
+  const userVideos = await Video.aggregate([
     {
-      $set: updatedFields,
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId),
+      },
     },
-    { new: true }
-  );
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              email: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $first: "$owner",
+        },
+      },
+    },
+    {
+      $facet: {
+        isPublished: [
+          {
+            $match: {
+              isPublished: true,
+            },
+          },
+        ],
+        isNotPublished: [
+          {
+            $match: {
+              isPublished: false,
+            },
+          },
+        ],
+      },
+    },
+  ]);
 
-  if (!updatedVideo) {
-    throw new apiError(400, "Couldn't update video details!");
+  if (!userVideos?.length) {
+    throw new apiError(500, "Error fetching user Videos!");
   }
 
   res
     .status(200)
-    .json(new apiRes(200, updatedVideo, "Video Details updated successfully!"));
+    .json(
+      new apiRes(
+        200,
+        { videos: userVideos[0] },
+        "User Video fetched successfully!"
+      )
+    );
 });
 
-// Delete Video
-// Fetch All Videos
-// Fetch User Videos
+// Get Current User Channel Details (Looged User Channel Details)
+// Get Other User Channel details
 
 export {
   uploadVideo,
+  updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getChannelVideos,
-  updateVideoDetails,
+  getUserChannelVideos,
+  getCurrentUserChannelVideos,
 };

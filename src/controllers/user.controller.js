@@ -52,7 +52,9 @@ const registerUser = asynchandler(async (req, res, next) => {
 
   // 2. Done
   if (
-    [fullName, username, email, password].some((field) => field?.trim() === "")
+    [fullName, username, email, password].some(
+      (field) => typeof field == "string" && field?.trim() === ""
+    )
   ) {
     throw new apiError(400, "All fields are required!");
   }
@@ -207,14 +209,14 @@ const refeshAccessToken = asynchandler(async (req, res, next) => {
     throw new apiError(401, "Invalid Token!");
   }
 
-  console.log("incomingRefreshToken: ", incomingRefreshToken);
+  // console.log("incomingRefreshToken: ", incomingRefreshToken);
 
   const decodedToken = jwt.verify(
     incomingRefreshToken,
     process.env.REFRESH_TOKEN_SECRET
   );
 
-  console.log("decodedToken: ", decodedToken);
+  // console.log("decodedToken: ", decodedToken);
 
   const user = await User.findById(decodedToken._id);
 
@@ -410,15 +412,17 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
 });
 
 const getUserChannelDetails = asynchandler(async (req, res) => {
-  const { username } = req.body;
+  const { channelUserId } = req.body;
 
-  if (!username.trim()) {
-    throw new apiError(400, "Username Invalid!");
+  const channelUser = await User.findById(channelUserId);
+
+  if (!channelUser) {
+    throw new apiError(401, "User not found! Unauthorised Access!");
   }
 
   const channel = await User.aggregate([
     {
-      $match: username?.toLowerCase(),
+      $match: { _id: new mongoose.Types.ObjectId(channelUserId) },
     },
     {
       $lookup: {

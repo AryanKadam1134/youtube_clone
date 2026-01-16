@@ -4,10 +4,11 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 import {
   uploadVideo,
+  updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getChannelVideos,
-  updateVideoDetails,
+  getUserChannelVideos,
+  getCurrentUserChannelVideos,
 } from "../controllers/video.controller.js";
 
 const videoRouter = Router();
@@ -27,12 +28,16 @@ videoRouter.route("/uploadVideo").post(
   uploadVideo
 );
 
+videoRouter.route("/updateVideoDetails").patch(verifyJWT, updateVideoDetails);
+
 videoRouter.route("/deleteVideo").delete(verifyJWT, deleteVideo);
 
-videoRouter.route("/getAllVideos").get(verifyJWT, getAllVideos);
+videoRouter.route("/getAllVideos").get(getAllVideos);
 
-videoRouter.route("/getChannelVideos").get(verifyJWT, getChannelVideos);
+videoRouter.route("/getUserChannelVideos").get(getUserChannelVideos);
 
-videoRouter.route("/updateVideoDetails").patch(verifyJWT, updateVideoDetails);
+videoRouter
+  .route("/getCurrentUserChannelVideos")
+  .get(verifyJWT, getCurrentUserChannelVideos);
 
 export default videoRouter;
