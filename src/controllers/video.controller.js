@@ -11,6 +11,7 @@ import {
 
 import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
+
 import mongoose from "mongoose";
 
 const uploadVideo = asynchandler(async (req, res) => {
@@ -290,11 +291,27 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     throw new apiError(401, "User not found! Unauthorised Access!");
   }
 
+  const { isPublished = "all" } = req.query; // all, true, false
+
+  if (!["all", "true", "false"].includes(isPublished)) {
+    throw new apiError(400, "isPublished must be one of: all, true, false");
+  }
+
+  const matchStage = {
+    owner: new mongoose.Types.ObjectId(userId),
+  };
+
+  if (isPublished !== "all") {
+    matchStage.isPublished = isPublished === "true";
+  }
+
+  if (!userId) {
+    throw new apiError(401, "User not found! Unauthorised Access!");
+  }
+
   const userVideos = await Video.aggregate([
     {
-      $match: {
-        owner: new mongoose.Types.ObjectId(userId),
-      },
+      $match: matchStage,
     },
     {
       $lookup: {
@@ -321,24 +338,6 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
         },
       },
     },
-    {
-      $facet: {
-        isPublished: [
-          {
-            $match: {
-              isPublished: true,
-            },
-          },
-        ],
-        isNotPublished: [
-          {
-            $match: {
-              isPublished: false,
-            },
-          },
-        ],
-      },
-    },
   ]);
 
   if (!userVideos?.length) {
@@ -350,7 +349,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     .json(
       new apiRes(
         200,
-        { videos: userVideos[0] },
+        { videos: userVideos },
         "User Video fetched successfully!"
       )
     );
