@@ -15,20 +15,15 @@ import { Video } from "../models/video.model.js";
 import mongoose from "mongoose";
 
 const uploadVideo = asynchandler(async (req, res) => {
-  // 1. Check if user is logged in or not
-  // 2. Check if localpath is there or not
-  // 3. Upload to cloudinary
-
   const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(401, "user not found! Invalid Token!");
-  }
 
   const { title, description, isPublished } = req.body;
 
-  if (!title || !description) {
-    throw new apiError(400, "All fields are required!");
+  const videoLocalpath = req.files?.videoFile[0]?.path;
+  const thumbnailLocalpath = req.files?.thumbnail[0]?.path;
+
+  if (!title || !description || !videoLocalpath || !thumbnailLocalpath) {
+    throw new apiError(400, "all fields are required!");
   }
 
   const parsedIsPublished = Boolean(isPublished);
@@ -37,22 +32,15 @@ const uploadVideo = asynchandler(async (req, res) => {
     throw new apiError(400, "isPublished should be a boolean value!");
   }
 
-  const videoLocalpath = req.files?.videoFile[0]?.path;
-  const thumbnailLocalpath = req.files?.thumbnail[0]?.path;
-
-  if (!videoLocalpath || !thumbnailLocalpath) {
-    throw new apiError(400, "Video and Thumbnail is required!");
-  }
-
   const uploadVideo = await uploadToCloudinary(videoLocalpath);
   const uploadThumbnail = await uploadToCloudinary(thumbnailLocalpath);
 
   if (!uploadVideo?.secure_url) {
-    throw new apiError(500, "Failed to uplaod video to cloudinary!");
+    throw new apiError(500, "failed to uplaod video to cloudinary!");
   }
 
   if (!uploadThumbnail?.secure_url) {
-    throw new apiError(500, "Failed to uplaod thumnail to cloudinary!");
+    throw new apiError(500, "failed to uplaod thumnail to cloudinary!");
   }
 
   const createdVideo = await Video.create({
@@ -74,23 +62,17 @@ const uploadVideo = asynchandler(async (req, res) => {
   });
 
   if (!createdVideo) {
-    throw new apiError(500, "Failed to upload video!");
+    throw new apiError(500, "failed to upload video!");
   }
 
   res
-    .status(200)
-    .json(new apiRes(200, createdVideo, "Video uplaoded succesfully!"));
+    .status(201)
+    .json(new apiRes(201, createdVideo, "video uplaoded succesfully!"));
 });
 
 // Update logged User video details
 const updateVideoDetails = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
-
   const updatedFields = {};
-
-  if (!userId) {
-    throw new apiError(401, "User not found! Unauthorised Access!");
-  }
 
   // Get video_id
   const { video_id, title, description, isPublished } = req.body;
@@ -99,14 +81,13 @@ const updateVideoDetails = asynchandler(async (req, res) => {
     throw new apiError(400, "video_id is required!");
   }
 
-  // Later also check if isPublished is undefined or null the api still works
   if (!(title || description || isPublished)) {
-    throw new apiError(401, "All fields cannot be empty!");
+    throw new apiError(400, "all fields cannot be empty!");
   }
 
   const checkBoolean = Boolean(isPublished);
 
-  if (typeof checkBoolean !== "boolean") {
+  if (isPublished && typeof checkBoolean !== "boolean") {
     throw new apiError(400, "isPublished should be a boolean value!");
   }
 
@@ -120,12 +101,12 @@ const updateVideoDetails = asynchandler(async (req, res) => {
   const video = await Video.findById(video_id);
 
   if (!video) {
-    throw new apiError(404, "Video not found");
+    throw new apiError(404, "video not found!");
   }
 
   // Check if the user is the owner of the video
-  if (video?.owner?.toString() !== userId?.toString()) {
-    throw new apiError(403, "You are not allowed to update this video details");
+  if (video?.owner?.toString() !== req.user?._id?.toString()) {
+    throw new apiError(403, "you are not allowed to update this video details");
   }
 
   const updatedVideo = await Video.findByIdAndUpdate(
@@ -137,21 +118,15 @@ const updateVideoDetails = asynchandler(async (req, res) => {
   );
 
   if (!updatedVideo) {
-    throw new apiError(400, "Couldn't update video details!");
+    throw new apiError(500, "couldn't update video details!");
   }
 
   res
     .status(200)
-    .json(new apiRes(200, updatedVideo, "Video Details updated successfully!"));
+    .json(new apiRes(200, updatedVideo, "video details updated successfully!"));
 });
 
 const deleteVideo = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(401, "User not found! Unauthorised Access!");
-  }
-
   // Get video_id
   const { video_id } = req.body;
 
@@ -162,11 +137,11 @@ const deleteVideo = asynchandler(async (req, res) => {
   const video = await Video.findById(video_id);
 
   if (!video) {
-    throw new apiError(404, "Video not found");
+    throw new apiError(404, "video not found");
   }
 
-  if (video?.owner?.toString() !== userId?.toString()) {
-    throw new apiError(403, "You are not allowed to delete this video");
+  if (video?.owner?.toString() !== req.user?._id?.toString()) {
+    throw new apiError(403, "you are not allowed to delete this video");
   }
 
   if (!video?.videoFile?.public_id) {
@@ -179,7 +154,7 @@ const deleteVideo = asynchandler(async (req, res) => {
 
   await Video.findByIdAndDelete(video_id);
 
-  res.status(200).json(new apiRes(200, {}, "Video Deleted Successfully!"));
+  res.status(200).json(new apiRes(200, {}, "video deleted successfully!"));
 });
 
 // Contains all the videos uploaded by users
@@ -218,10 +193,10 @@ const getAllVideos = asynchandler(async (req, res) => {
   ]);
 
   if (!videos) {
-    throw new apiError(400, "Error fetching all videos!");
+    throw new apiError(500, "error fetching all videos!");
   }
 
-  res.status(200).json(new apiRes(200, videos, "Videos fetched successfully!"));
+  res.status(200).json(new apiRes(200, videos, "videos fetched successfully!"));
 });
 
 // Fetch other User Channel Videos
@@ -231,7 +206,7 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
   const channelUser = await User.findById(channelUserId);
 
   if (!channelUser) {
-    throw new apiError(401, "User not found! Unauthorised Access!");
+    throw new apiError(404, "channel not found!");
   }
 
   const userVideos = await Video.aggregate([
@@ -285,12 +260,6 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
 
 // Fetch other User Channel Videos
 const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(401, "User not found! Unauthorised Access!");
-  }
-
   const { isPublished = "all" } = req.query; // all, true, false
 
   if (!["all", "true", "false"].includes(isPublished)) {
@@ -298,15 +267,11 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
   }
 
   const matchStage = {
-    owner: new mongoose.Types.ObjectId(userId),
+    owner: new mongoose.Types.ObjectId(req.user?._id),
   };
 
   if (isPublished !== "all") {
     matchStage.isPublished = isPublished === "true";
-  }
-
-  if (!userId) {
-    throw new apiError(401, "User not found! Unauthorised Access!");
   }
 
   const userVideos = await Video.aggregate([
@@ -341,7 +306,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
   ]);
 
   if (!userVideos?.length) {
-    throw new apiError(500, "Error fetching user Videos!");
+    throw new apiError(500, "error fetching channel videos!");
   }
 
   res
@@ -350,7 +315,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
       new apiRes(
         200,
         { videos: userVideos },
-        "User Video fetched successfully!"
+        "channel video fetched successfully!"
       )
     );
 });

@@ -6,12 +6,7 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subcription.model.js";
 
 const subscribeChannel = asynchandler(async (req, res) => {
-  // Check user exists
   const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(400, "user not found! Unauthorised Access!");
-  }
 
   // Check channelUserId exists and not the same as userId
   const { channelUserId } = req.params;
@@ -21,14 +16,14 @@ const subscribeChannel = asynchandler(async (req, res) => {
   }
 
   if (userId.toString() === channelUserId.toString()) {
-    throw new apiError(400, "You cannot subscribe to your own channel!");
+    throw new apiError(403, "you cannot subscribe to your own channel!");
   }
 
   // Check channelUser exists
   const channelUser = await User.findById(channelUserId);
 
   if (!channelUser) {
-    throw new apiError(400, "channel user does not exist!");
+    throw new apiError(400, "channel not found!");
   }
 
   // Check if user have not already subscribed
@@ -38,7 +33,7 @@ const subscribeChannel = asynchandler(async (req, res) => {
   });
 
   if (alreadySubscribed) {
-    throw new apiError(400, "User is already subscribed!");
+    throw new apiError(403, "user is already subscribed!");
   }
 
   // Create the document
@@ -48,19 +43,14 @@ const subscribeChannel = asynchandler(async (req, res) => {
   });
 
   if (!subscribed) {
-    throw new apiError(400, "Failed to subscribe to channel");
+    throw new apiError(500, "failed to subscribe to channel!");
   }
 
-  res.status(200).json(new apiRes(200, {}, "Subscribed successfully!"));
+  res.status(202).json(new apiRes(202, {}, "Subscribed successfully!"));
 });
 
 const unsubscribeChannel = asynchandler(async (req, res) => {
-  // Check user exists
   const userId = req.user?._id;
-
-  if (!userId) {
-    throw new apiError(400, "user not found! Unauthorised Access!");
-  }
 
   // Check channelUserId exists and not the same as userId
   const { channelUserId } = req.params;
@@ -76,10 +66,10 @@ const unsubscribeChannel = asynchandler(async (req, res) => {
   });
 
   if (!alreadySubscribed) {
-    throw new apiError(400, "Error unsubscribing the channel!");
+    throw new apiError(500, "error unsubscribing the channel!");
   }
 
-  res.status(200).json(new apiRes(200, {}, "Unsubscribed successfully!"));
+  res.status(202).json(new apiRes(202, {}, "Unsubscribed successfully!"));
 });
 
 export { subscribeChannel, unsubscribeChannel };
