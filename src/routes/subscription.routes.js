@@ -8,11 +8,11 @@ import {
 const subscriptionRouter = Router();
 
 subscriptionRouter
-  .route("/:channelUserId/subscribe")
+  .route("/:userId/subscribe")
   .post(verifyJWT, subscribeChannel);
 
 subscriptionRouter
-  .route("/:channelUserId/unsubscribe")
+  .route("/:userId/unsubscribe")
   .post(verifyJWT, unsubscribeChannel);
 
 export default subscriptionRouter;

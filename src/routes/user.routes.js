@@ -36,22 +36,23 @@ userRouter.route("/logout").post(verifyJWT, logoutUser);
 
 userRouter.route("/refreshtoken").post(refeshAccessToken);
 
-userRouter.route("/change_password").post(verifyJWT, changeUserPassword);
+userRouter.route("/change_password").patch(verifyJWT, changeUserPassword);
 
-userRouter.route("/getCurrentUser").get(verifyJWT, getCurrentUser);
+userRouter.route("/me").get(verifyJWT, getCurrentUser);
 
-userRouter.route("/updateUserDetails").post(verifyJWT, updateUserDetails);
-
-userRouter
-  .route("/updateUserAvatar")
-  .post(verifyJWT, upload.single("avatar"), updateUserAvatar);
+userRouter.route("/me/update_user").patch(verifyJWT, updateUserDetails);
 
 userRouter
-  .route("/updateUserCoverImage")
-  .post(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+  .route("/me/update_avatar")
+  .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
 
 userRouter
-  .route("/getUserChannelDetails")
-  .post(verifyJWT, getUserChannelDetails);
+  .route("/me/update_coverImage")
+  .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+
+userRouter.route("/:userId").get(verifyJWT, getUserChannelDetails);
 
 export default userRouter;
+
+// post request => req.body
+// get request => req.query

@@ -15,12 +15,12 @@ import { Video } from "../models/video.model.js";
 import mongoose from "mongoose";
 
 const uploadVideo = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
-
   const { title, description, isPublished } = req.body;
 
   const videoLocalpath = req.files?.videoFile[0]?.path;
   const thumbnailLocalpath = req.files?.thumbnail[0]?.path;
+  console.log("videoLocalpath: ", videoLocalpath);
+  console.log("thumbnailLocalpath: ", thumbnailLocalpath);
 
   if (!title || !description || !videoLocalpath || !thumbnailLocalpath) {
     throw new apiError(400, "all fields are required!");
@@ -44,7 +44,7 @@ const uploadVideo = asynchandler(async (req, res) => {
   }
 
   const createdVideo = await Video.create({
-    owner: userId,
+    owner: req.user?._id,
     title: title,
     description: description,
     videoFile: {
@@ -75,7 +75,8 @@ const updateVideoDetails = asynchandler(async (req, res) => {
   const updatedFields = {};
 
   // Get video_id
-  const { video_id, title, description, isPublished } = req.body;
+  const { video_id } = req.params;
+  const { title, description, isPublished } = req.body;
 
   if (!video_id) {
     throw new apiError(400, "video_id is required!");
@@ -128,7 +129,7 @@ const updateVideoDetails = asynchandler(async (req, res) => {
 
 const deleteVideo = asynchandler(async (req, res) => {
   // Get video_id
-  const { video_id } = req.body;
+  const { video_id } = req.params;
 
   if (!video_id) {
     throw new apiError(400, "video_id is required!");
@@ -201,9 +202,9 @@ const getAllVideos = asynchandler(async (req, res) => {
 
 // Fetch other User Channel Videos
 const getUserChannelVideos = asynchandler(async (req, res) => {
-  const { channelUserId } = req.body;
+  const { userId } = req.params;
 
-  const channelUser = await User.findById(channelUserId);
+  const channelUser = await User.findById(userId);
 
   if (!channelUser) {
     throw new apiError(404, "channel not found!");
@@ -212,7 +213,7 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
   const userVideos = await Video.aggregate([
     {
       $match: {
-        owner: new mongoose.Types.ObjectId(channelUserId),
+        owner: new mongoose.Types.ObjectId(userId),
         isPublished: true,
       },
     },
@@ -258,7 +259,6 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
     );
 });
 
-// Fetch other User Channel Videos
 const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
   const { isPublished = "all" } = req.query; // all, true, false
 

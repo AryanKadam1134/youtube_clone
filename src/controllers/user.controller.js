@@ -284,6 +284,17 @@ const updateUserDetails = asynchandler(async (req, res) => {
 
   const { username, fullName, email } = req.body;
 
+  const userExists = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+
+  if (userExists) {
+    throw new apiError(
+      409,
+      "user already exist with current username or email!"
+    );
+  }
+
   if (username) updatedFields.username = username;
   if (fullName) updatedFields.fullName = fullName;
   if (email) updatedFields.email = email;
@@ -293,7 +304,7 @@ const updateUserDetails = asynchandler(async (req, res) => {
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set: updatedFields,
     },
@@ -307,10 +318,10 @@ const updateUserDetails = asynchandler(async (req, res) => {
 
 const updateUserAvatar = asynchandler(async (req, res) => {
   // Get _id form token
-  const userId = req.user?._id;
+  const loggedUserId = req.user?._id;
 
   // Get Logged User
-  const loggedUser = await User.findById(userId);
+  const loggedUser = await User.findById(loggedUserId);
 
   // Get File Path
   const avatarLocalPath = req.file?.path;
@@ -331,7 +342,7 @@ const updateUserAvatar = asynchandler(async (req, res) => {
 
   // Update the User
   const updatedUser = await User.findByIdAndUpdate(
-    userId,
+    loggedUserId,
     {
       $set: {
         avatar: {
@@ -351,9 +362,9 @@ const updateUserAvatar = asynchandler(async (req, res) => {
 });
 
 const updateUserCoverImage = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
+  const loggedUserId = req.user?._id;
 
-  const loggedUser = await User.findById(userId);
+  const loggedUser = await User.findById(loggedUserId);
 
   const coverImageLocalPath = req.file?.path;
 
@@ -371,7 +382,7 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
     deleteFromCloudinary(loggedUser?.coverImage);
 
   const user = await User.findByIdAndUpdate(
-    userId,
+    loggedUserId,
     {
       $set: {
         coverImage: {
@@ -390,13 +401,13 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
 });
 
 const getUserChannelDetails = asynchandler(async (req, res) => {
-  const { channelUserId } = req.body;
+  const { userId } = req.params;
 
-  if (!channelUserId) {
-    throw new apiError(400, "channelUserId is required!");
+  if (!userId) {
+    throw new apiError(400, "userId is required!");
   }
 
-  const channelUser = await User.findById(channelUserId);
+  const channelUser = await User.findById(userId);
 
   if (!channelUser) {
     throw new apiError(404, "user not found!");
@@ -404,7 +415,7 @@ const getUserChannelDetails = asynchandler(async (req, res) => {
 
   const channel = await User.aggregate([
     {
-      $match: { _id: new mongoose.Types.ObjectId(channelUserId) },
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
     },
     {
       $lookup: {

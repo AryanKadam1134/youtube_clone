@@ -13,7 +13,7 @@ import {
 
 const videoRouter = Router();
 
-videoRouter.route("/uploadVideo").post(
+videoRouter.route("/me/upload_video").post(
   verifyJWT,
   upload.fields([
     {
@@ -28,16 +28,16 @@ videoRouter.route("/uploadVideo").post(
   uploadVideo
 );
 
-videoRouter.route("/updateVideoDetails").patch(verifyJWT, updateVideoDetails);
-
-videoRouter.route("/deleteVideo").delete(verifyJWT, deleteVideo);
-
-videoRouter.route("/getAllVideos").get(getAllVideos);
-
-videoRouter.route("/getUserChannelVideos").get(getUserChannelVideos);
-
 videoRouter
-  .route("/getCurrentUserChannelVideos")
-  .get(verifyJWT, getCurrentUserChannelVideos);
+  .route("/:video_id/update_video")
+  .patch(verifyJWT, updateVideoDetails);
+
+videoRouter.route("/:video_id/delete_video").delete(verifyJWT, deleteVideo);
+
+videoRouter.route("/all").get(getAllVideos);
+
+videoRouter.route("/:userId").get(getUserChannelVideos);
+
+videoRouter.route("/me/all").get(verifyJWT, getCurrentUserChannelVideos);
 
 export default videoRouter;

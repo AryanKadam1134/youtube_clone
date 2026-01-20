@@ -6,21 +6,21 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subcription.model.js";
 
 const subscribeChannel = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
+  const loggedUserId = req.user?._id;
 
-  // Check channelUserId exists and not the same as userId
-  const { channelUserId } = req.params;
+  // Check userId exists and not the same as loggedUserId
+  const { userId } = req.params;
 
-  if (!channelUserId) {
-    throw new apiError(400, "channelUserId is required!");
+  if (!userId) {
+    throw new apiError(400, "userId is required!");
   }
 
-  if (userId.toString() === channelUserId.toString()) {
+  if (loggedUserId.toString() === userId.toString()) {
     throw new apiError(403, "you cannot subscribe to your own channel!");
   }
 
   // Check channelUser exists
-  const channelUser = await User.findById(channelUserId);
+  const channelUser = await User.findById(userId);
 
   if (!channelUser) {
     throw new apiError(400, "channel not found!");
@@ -28,8 +28,8 @@ const subscribeChannel = asynchandler(async (req, res) => {
 
   // Check if user have not already subscribed
   const alreadySubscribed = await Subscription.findOne({
-    subscriber: userId,
-    channel: channelUserId,
+    subscriber: loggedUserId,
+    channel: userId,
   });
 
   if (alreadySubscribed) {
@@ -38,8 +38,8 @@ const subscribeChannel = asynchandler(async (req, res) => {
 
   // Create the document
   const subscribed = await Subscription.create({
-    subscriber: userId,
-    channel: channelUserId,
+    subscriber: loggedUserId,
+    channel: userId,
   });
 
   if (!subscribed) {
@@ -50,19 +50,19 @@ const subscribeChannel = asynchandler(async (req, res) => {
 });
 
 const unsubscribeChannel = asynchandler(async (req, res) => {
-  const userId = req.user?._id;
+  const loggedUserId = req.user?._id;
 
-  // Check channelUserId exists and not the same as userId
-  const { channelUserId } = req.params;
+  // Check userId exists and not the same as loggedUserId
+  const { userId } = req.params;
 
-  if (!channelUserId) {
-    throw new apiError(400, "channelUserId is required!");
+  if (!userId) {
+    throw new apiError(400, "userId is required!");
   }
 
   // Check if document exists and delete
   const alreadySubscribed = await Subscription.findOneAndDelete({
-    subscriber: userId,
-    channel: channelUserId,
+    subscriber: loggedUserId,
+    channel: userId,
   });
 
   if (!alreadySubscribed) {
