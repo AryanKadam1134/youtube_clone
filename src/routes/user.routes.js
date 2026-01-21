@@ -53,6 +53,3 @@ userRouter
 userRouter.route("/:userId").get(verifyJWT, getUserChannelDetails);
 
 export default userRouter;
-
-// post request => req.body
-// get request => req.query

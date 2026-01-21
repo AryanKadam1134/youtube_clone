@@ -5,6 +5,7 @@ import asynchandler from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subcription.model.js";
 
+// Subscribe Channel
 const subscribeChannel = asynchandler(async (req, res) => {
   const loggedUserId = req.user?._id;
 
@@ -49,6 +50,7 @@ const subscribeChannel = asynchandler(async (req, res) => {
   res.status(202).json(new apiRes(202, {}, "Subscribed successfully!"));
 });
 
+// Unsubscribe Channel
 const unsubscribeChannel = asynchandler(async (req, res) => {
   const loggedUserId = req.user?._id;
 

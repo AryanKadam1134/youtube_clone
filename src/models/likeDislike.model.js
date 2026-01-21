@@ -1,10 +1,15 @@
 import mongoose, { model, Schema } from "mongoose";
 
-const likeSchema = new Schema(
+const likeDislikeSchema = new Schema(
   {
-    likedBy: {
+    owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    reaction: {
+      type: String,
+      enum: ["like", "dislike"],
       required: true,
     },
     comment: {
@@ -25,4 +30,4 @@ const likeSchema = new Schema(
   }
 );
 
-export const Like = model("Like", likeSchema);
+export const LikeDislike = model("LikeDislike", likeDislikeSchema);

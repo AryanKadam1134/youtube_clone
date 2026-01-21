@@ -9,6 +9,8 @@ import {
   getAllVideos,
   getUserChannelVideos,
   getCurrentUserChannelVideos,
+  viewVideo,
+  getSingleVideo,
 } from "../controllers/video.controller.js";
 
 const videoRouter = Router();
@@ -39,5 +41,9 @@ videoRouter.route("/all").get(getAllVideos);
 videoRouter.route("/:userId").get(getUserChannelVideos);
 
 videoRouter.route("/me/all").get(verifyJWT, getCurrentUserChannelVideos);
+
+videoRouter.route("/:video_id/view").patch(verifyJWT, viewVideo);
+
+videoRouter.route("/:video_id/single").get(verifyJWT, getSingleVideo);
 
 export default videoRouter;

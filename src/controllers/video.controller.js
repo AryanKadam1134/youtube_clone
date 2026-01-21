@@ -1,5 +1,3 @@
-import jwt from "jsonwebtoken";
-
 import apiRes from "../utils/apiRes.js";
 import apiError from "../utils/apiError.js";
 import asynchandler from "../utils/asyncHandler.js";
@@ -14,6 +12,7 @@ import { Video } from "../models/video.model.js";
 
 import mongoose from "mongoose";
 
+// Uplaod Video
 const uploadVideo = asynchandler(async (req, res) => {
   const { title, description, isPublished } = req.body;
 
@@ -70,7 +69,7 @@ const uploadVideo = asynchandler(async (req, res) => {
     .json(new apiRes(201, createdVideo, "video uplaoded succesfully!"));
 });
 
-// Update logged User video details
+// Update Video details
 const updateVideoDetails = asynchandler(async (req, res) => {
   const updatedFields = {};
 
@@ -127,6 +126,7 @@ const updateVideoDetails = asynchandler(async (req, res) => {
     .json(new apiRes(200, updatedVideo, "video details updated successfully!"));
 });
 
+// Delete Video
 const deleteVideo = asynchandler(async (req, res) => {
   // Get video_id
   const { video_id } = req.params;
@@ -158,7 +158,7 @@ const deleteVideo = asynchandler(async (req, res) => {
   res.status(200).json(new apiRes(200, {}, "video deleted successfully!"));
 });
 
-// Contains all the videos uploaded by users
+// Fetch all Videos
 const getAllVideos = asynchandler(async (req, res) => {
   const videos = await Video.aggregate([
     {
@@ -185,9 +185,55 @@ const getAllVideos = asynchandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              // if statement
+              $expr: {
+                // && statement
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "like"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "dislike"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "dislikes",
+      },
+    },
+    {
       $addFields: {
         owner: {
           $first: "$owner",
+        },
+        likes: {
+          $size: "$likes",
+        },
+        dislikes: {
+          $size: "$dislikes",
         },
       },
     },
@@ -197,10 +243,12 @@ const getAllVideos = asynchandler(async (req, res) => {
     throw new apiError(500, "error fetching all videos!");
   }
 
-  res.status(200).json(new apiRes(200, videos, "videos fetched successfully!"));
+  res
+    .status(200)
+    .json(new apiRes(200, { videos: videos }, "videos fetched successfully!"));
 });
 
-// Fetch other User Channel Videos
+// Fetch Channel Videos
 const getUserChannelVideos = asynchandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -236,9 +284,55 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              // if statement
+              $expr: {
+                // && statement
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "like"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "dislike"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "dislikes",
+      },
+    },
+    {
       $addFields: {
         owner: {
           $first: "$owner",
+        },
+        likes: {
+          $size: "$likes",
+        },
+        dislikes: {
+          $size: "$dislikes",
         },
       },
     },
@@ -259,6 +353,7 @@ const getUserChannelVideos = asynchandler(async (req, res) => {
     );
 });
 
+// Fetch logged user Channel Videos
 const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
   const { isPublished = "all" } = req.query; // all, true, false
 
@@ -297,9 +392,55 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              // if statement
+              $expr: {
+                // && statement
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "like"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "likedislikes",
+        let: { videoId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$video", "$$videoId"] },
+                  { $eq: ["$reaction", "dislike"] },
+                ],
+              },
+            },
+          },
+        ],
+        as: "dislikes",
+      },
+    },
+    {
       $addFields: {
         owner: {
           $first: "$owner",
+        },
+        likes: {
+          $size: "$likes",
+        },
+        dislikes: {
+          $size: "$dislikes",
         },
       },
     },
@@ -320,8 +461,134 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     );
 });
 
-// Get Current User Channel Details (Looged User Channel Details)
-// Get Other User Channel details
+// View Video
+const viewVideo = asynchandler(async (req, res) => {
+  const { video_id } = req.params;
+
+  if (!video_id) {
+    throw new apiError(400, "video_id is required!");
+  }
+
+  const updatedVideo = await Video.findByIdAndUpdate(
+    video_id,
+    {
+      $inc: {
+        views: 1,
+      },
+    },
+    { new: true }
+  );
+
+  if (!updatedVideo) {
+    throw new apiError(500, "couldn't update views!");
+  }
+
+  return res
+    .status(200)
+    .json(new apiRes(200, updatedVideo, "video viewed successfully!"));
+});
+
+// Fetch Single Video
+const getSingleVideo = asynchandler(async (req, res) => {
+  const { video_id } = req.params;
+
+  if (!video_id) {
+    throw new apiError(400, "video_id is required!");
+  }
+
+  const video = await Video.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(video_id),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              email: 1,
+              avatar: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "likedislikes",
+        pipeline: [
+          {
+            $match: {
+              video: new mongoose.Types.ObjectId(video_id),
+              reaction: "like",
+            },
+          },
+        ],
+        as: "likes",
+      },
+    },
+    {
+      $lookup: {
+        from: "likedislikes",
+        pipeline: [
+          {
+            $match: {
+              video: new mongoose.Types.ObjectId(video_id),
+              reaction: "dislike",
+            },
+          },
+        ],
+        as: "dislikes",
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $first: "$owner",
+        },
+        likes: {
+          $size: "$likes",
+        },
+        dislikes: {
+          $size: "$dislikes",
+        },
+        liked: {
+          $cond: {
+            if: {
+              $in: [req.user?._id, "$likes.owner"],
+            },
+            then: true,
+            else: false,
+          },
+        },
+        disliked: {
+          $cond: {
+            if: {
+              $in: [req.user?._id, "$dislikes.owner"],
+            },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+  ]);
+
+  if (!video) {
+    throw new apiError(500, "video doesn't exists!");
+  }
+
+  return res
+    .status(200)
+    .json(new apiRes(200, video, "video fetched successfully!"));
+});
 
 export {
   uploadVideo,
@@ -330,4 +597,9 @@ export {
   getAllVideos,
   getUserChannelVideos,
   getCurrentUserChannelVideos,
+  viewVideo,
+  getSingleVideo,
 };
+
+// make views controller
+// add likedBy to all the video fields

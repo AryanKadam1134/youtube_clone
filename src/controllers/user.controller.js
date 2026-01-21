@@ -13,6 +13,7 @@ import {
 
 import { User } from "../models/user.model.js";
 
+// Generate Access & Refresh Token
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -33,6 +34,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+// Register User
 const registerUser = asynchandler(async (req, res) => {
   // For sucessfully registering the user =>
   // 1. Get the user details form the frontend (for testing => postman)
@@ -97,10 +99,10 @@ const registerUser = asynchandler(async (req, res) => {
     },
     coverImage: coverImageUploaded
       ? {
-          url: coverImageUploaded?.secure_url,
-          public_id: coverImageUploaded?.public_id,
-          resource_type: coverImageUploaded?.resource_type,
-        }
+        url: coverImageUploaded?.secure_url,
+        public_id: coverImageUploaded?.public_id,
+        resource_type: coverImageUploaded?.resource_type,
+      }
       : undefined,
     username: username.toLowerCase(),
     email,
@@ -121,6 +123,7 @@ const registerUser = asynchandler(async (req, res) => {
     .json(new apiRes(201, createdUser, "user registered successfully!"));
 });
 
+// Login User
 const loginUser = asynchandler(async (req, res) => {
   // For Logging in the user =>
   // 1. Get the response from req.body
@@ -185,6 +188,7 @@ const loginUser = asynchandler(async (req, res) => {
     );
 });
 
+// Logout User
 const logoutUser = asynchandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user?._id,
@@ -203,6 +207,7 @@ const logoutUser = asynchandler(async (req, res) => {
     .json(new apiRes(204, {}, "user logged out successfully!"));
 });
 
+// Refresh Access Token
 const refeshAccessToken = asynchandler(async (req, res) => {
   const incomingRefreshToken = req.cookies?.refreshToken;
 
@@ -245,6 +250,7 @@ const refeshAccessToken = asynchandler(async (req, res) => {
     );
 });
 
+// Change User password
 const changeUserPassword = asynchandler(async (req, res) => {
   const loggedUser = await User.findById(req.user?._id);
 
@@ -273,12 +279,14 @@ const changeUserPassword = asynchandler(async (req, res) => {
     .json(new apiRes(200, {}, "password changed successfully!"));
 });
 
+// Fetch Current User
 const getCurrentUser = asynchandler(async (req, res) => {
   return res
     .status(200)
     .json(new apiRes(200, req.user, "current user fetched successfully!"));
 });
 
+// Update User details
 const updateUserDetails = asynchandler(async (req, res) => {
   const updatedFields = {};
 
@@ -316,6 +324,7 @@ const updateUserDetails = asynchandler(async (req, res) => {
     .json(new apiRes(200, updatedUser, "user details changed successfully!"));
 });
 
+// Update User avatar
 const updateUserAvatar = asynchandler(async (req, res) => {
   // Get _id form token
   const loggedUserId = req.user?._id;
@@ -361,6 +370,7 @@ const updateUserAvatar = asynchandler(async (req, res) => {
     .json(new apiRes(200, updatedUser, "user avatar updated successfully!"));
 });
 
+// Update User coverImage
 const updateUserCoverImage = asynchandler(async (req, res) => {
   const loggedUserId = req.user?._id;
 
@@ -400,6 +410,7 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
     .json(new apiRes(200, user, "user cover image updated successfully!"));
 });
 
+// Fetch User Channel Details
 const getUserChannelDetails = asynchandler(async (req, res) => {
   const { userId } = req.params;
 
