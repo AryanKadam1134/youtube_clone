@@ -602,4 +602,4 @@ export {
 };
 
 // make views controller
-// add likedBy to all the video fields
+// add likedBy to all the video controllers
