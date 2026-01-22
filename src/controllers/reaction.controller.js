@@ -28,7 +28,6 @@ const likeVideo = asynchandler(async (req, res) => {
 
     await Video.findByIdAndUpdate(video_id, {
       $inc: { likesCount: -1 },
-      $max: { likesCount: 0 },
     });
 
     return res.status(200).json(new apiRes(200, {}, "no like or dislike!"));
@@ -41,7 +40,6 @@ const likeVideo = asynchandler(async (req, res) => {
 
     await Video.findByIdAndUpdate(video_id, {
       $inc: { likesCount: 1, dislikesCount: -1 },
-      $max: { dislikesCount: 0 },
     });
 
     return res.status(200).json(new apiRes(200, {}, "video liked!"));
@@ -91,7 +89,6 @@ const dislikeVideo = asynchandler(async (req, res) => {
 
     await Video.findByIdAndUpdate(video_id, {
       $inc: { dislikesCount: -1 },
-      $max: { dislikesCount: 0 },
     });
 
     return res.status(200).json(new apiRes(200, {}, "no like or dislike!"));
@@ -104,7 +101,6 @@ const dislikeVideo = asynchandler(async (req, res) => {
 
     await Video.findByIdAndUpdate(video_id, {
       $inc: { likesCount: -1, dislikesCount: 1 },
-      $max: { likesCount: 0 },
     });
 
     return res.status(200).json(new apiRes(200, {}, "video disliked!"));
