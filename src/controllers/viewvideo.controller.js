@@ -25,23 +25,22 @@ const viewVideo = asynchandler(async (req, res) => {
     video: video_id,
   });
 
-  if (documentExists) {
-    throw new apiError(500, "video already viewed!");
+  if (!documentExists) {
+    await ViewVideo.create({
+      viewedBy: loggedUserId,
+      video: video_id,
+    });
+
+    await Video.findByIdAndUpdate(video_id, {
+      $inc: { views: 1 },
+    });
   }
 
-  const viewedVideo = await ViewVideo.create({
-    viewedBy: loggedUserId,
-    video: video_id,
-  });
+  const video = await Video.findById(video_id);
 
-  if (!viewedVideo) {
-    throw new apiError(500, "couldn't view video!");
-  }
-
-  return res.status(200).json(new apiRes(200, viewedVideo, "video viewed!"));
+  return res
+    .status(200)
+    .json(new apiRes(200, video, "video viewed successfully"));
 });
 
 export { viewVideo };
-
-
-// remember you could just increase the no of views count if document does not exists.

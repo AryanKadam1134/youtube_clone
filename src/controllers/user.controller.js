@@ -99,10 +99,10 @@ const registerUser = asynchandler(async (req, res) => {
     },
     coverImage: coverImageUploaded
       ? {
-        url: coverImageUploaded?.secure_url,
-        public_id: coverImageUploaded?.public_id,
-        resource_type: coverImageUploaded?.resource_type,
-      }
+          url: coverImageUploaded?.secure_url,
+          public_id: coverImageUploaded?.public_id,
+          resource_type: coverImageUploaded?.resource_type,
+        }
       : undefined,
     username: username.toLowerCase(),
     email,
@@ -175,7 +175,7 @@ const loginUser = asynchandler(async (req, res) => {
     throw new apiError(500, "error logging in user!");
   }
 
-  res
+  return res
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
@@ -200,7 +200,7 @@ const logoutUser = asynchandler(async (req, res) => {
     }
   );
 
-  res
+  return res
     .status(204)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
@@ -237,7 +237,7 @@ const refeshAccessToken = asynchandler(async (req, res) => {
     user._id
   );
 
-  res
+  return res
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
@@ -277,13 +277,6 @@ const changeUserPassword = asynchandler(async (req, res) => {
   return res
     .status(200)
     .json(new apiRes(200, {}, "password changed successfully!"));
-});
-
-// Fetch Current User
-const getCurrentUser = asynchandler(async (req, res) => {
-  return res
-    .status(200)
-    .json(new apiRes(200, req.user, "current user fetched successfully!"));
 });
 
 // Update User details
@@ -365,7 +358,7 @@ const updateUserAvatar = asynchandler(async (req, res) => {
   ).select("-password -refreshToken");
 
   // Send Response
-  res
+  return res
     .status(200)
     .json(new apiRes(200, updatedUser, "user avatar updated successfully!"));
 });
@@ -410,23 +403,18 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
     .json(new apiRes(200, user, "user cover image updated successfully!"));
 });
 
-// Fetch User Channel Details
-const getUserChannelDetails = asynchandler(async (req, res) => {
-  const { userId } = req.params;
+// Fetch Current User
+const getCurrentUser = asynchandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new apiRes(200, req.user, "current user fetched successfully!"));
+});
 
-  if (!userId) {
-    throw new apiError(400, "userId is required!");
-  }
-
-  const channelUser = await User.findById(userId);
-
-  if (!channelUser) {
-    throw new apiError(404, "user not found!");
-  }
-
+// Fetch Current User Channel Details
+const getCurrentUserChannelDetails = asynchandler(async (req, res) => {
   const channel = await User.aggregate([
     {
-      $match: { _id: new mongoose.Types.ObjectId(userId) },
+      $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
     },
     {
       $lookup: {
@@ -452,13 +440,6 @@ const getUserChannelDetails = asynchandler(async (req, res) => {
         subscribedChannelsCount: {
           $size: "$subscribedTo",
         },
-        isSubscribed: {
-          $cond: {
-            if: { $in: [req.user?._id, "$subscribers.subscribers"] },
-            then: true,
-            else: false,
-          },
-        },
       },
     },
     {
@@ -470,7 +451,8 @@ const getUserChannelDetails = asynchandler(async (req, res) => {
         coverImage: 1,
         subscribers: 1,
         subscribedTo: 1,
-        isSubscribed: 1,
+        subscribersCount: 1,
+        subscribedChannelsCount: 1,
       },
     },
   ]);
@@ -485,7 +467,8 @@ const getUserChannelDetails = asynchandler(async (req, res) => {
     .json(new apiRes(200, channel[0], "channel details fetched successfully!"));
 });
 
-const getUserWatchHistory = asynchandler(async (req, res) => {
+// Current user watch history
+const getCurrentUserWatchHistory = asynchandler(async (req, res) => {
   const history = await User.aggregate([
     {
       $match: {
@@ -545,15 +528,80 @@ const getUserWatchHistory = asynchandler(async (req, res) => {
     );
 });
 
+// Fetch Any User Channel Details
+const getChannelDetails = asynchandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    throw new apiError(400, "userId is required!");
+  }
+
+  const channelUser = await User.findById(userId);
+
+  if (!channelUser) {
+    throw new apiError(404, "user not found!");
+  }
+
+  const channel = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $addFields: {
+        isSubscribed: {
+          $cond: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        email: 1,
+        avatar: 1,
+        coverImage: 1,
+        subscribers: 1,
+        subscribersCount: 1,
+        isSubscribed: 1,
+      },
+    },
+  ]);
+
+  if (!channel?.length) {
+    throw new apiError(500, "error while fetching channel details!");
+  }
+  // console.log("Channel: ", channel);
+
+  res
+    .status(200)
+    .json(new apiRes(200, channel[0], "channel details fetched successfully!"));
+});
+
 export {
   registerUser,
   loginUser,
   logoutUser,
   refeshAccessToken,
   changeUserPassword,
-  getCurrentUser,
   updateUserDetails,
   updateUserAvatar,
   updateUserCoverImage,
-  getUserChannelDetails,
+  getCurrentUser,
+  getCurrentUserChannelDetails,
+  getChannelDetails,
 };

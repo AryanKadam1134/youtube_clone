@@ -51,6 +51,20 @@ const videoSchema = new Schema(
         default: "image",
       },
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    likesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    dislikesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     isPublished: {
       type: Boolean,
       required: true,

@@ -1,6 +1,6 @@
 import mongoose, { model, Schema } from "mongoose";
 
-const likeDislikeSchema = new Schema(
+const reactionSchema = new Schema(
   {
     owner: {
       type: Schema.Types.ObjectId,
@@ -30,4 +30,4 @@ const likeDislikeSchema = new Schema(
   }
 );
 
-export const LikeDislike = model("LikeDislike", likeDislikeSchema);
+export const Reaction = model("Reaction", reactionSchema);

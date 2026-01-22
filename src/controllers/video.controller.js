@@ -185,66 +185,9 @@ const getAllVideos = asynchandler(async (req, res) => {
       },
     },
     {
-      $lookup: {
-        from: "viewvideos",
-        localField: "_id",
-        foreignField: "video",
-        as: "views",
-      },
-    },
-    {
-      $lookup: {
-        from: "likedislikes",
-        let: { videoId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              // if statement
-              $expr: {
-                // && statement
-                $and: [
-                  { $eq: ["$video", "$$videoId"] },
-                  { $eq: ["$reaction", "like"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "likes",
-      },
-    },
-    {
-      $lookup: {
-        from: "likedislikes",
-        let: { videoId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$video", "$$videoId"] },
-                  { $eq: ["$reaction", "dislike"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "dislikes",
-      },
-    },
-    {
       $addFields: {
         owner: {
           $first: "$owner",
-        },
-        likes: {
-          $size: "$likes",
-        },
-        dislikes: {
-          $size: "$dislikes",
-        },
-        views: {
-          $size: "$views",
         },
       },
     },
@@ -472,33 +415,6 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     );
 });
 
-// View Video
-const viewVideo = asynchandler(async (req, res) => {
-  const { video_id } = req.params;
-
-  if (!video_id) {
-    throw new apiError(400, "video_id is required!");
-  }
-
-  const updatedVideo = await Video.findByIdAndUpdate(
-    video_id,
-    {
-      $inc: {
-        views: 1,
-      },
-    },
-    { new: true }
-  );
-
-  if (!updatedVideo) {
-    throw new apiError(500, "couldn't update views!");
-  }
-
-  return res
-    .status(200)
-    .json(new apiRes(200, updatedVideo, "video viewed successfully!"));
-});
-
 // Fetch Single Video
 const getSingleVideo = asynchandler(async (req, res) => {
   const { video_id } = req.params;
@@ -608,9 +524,10 @@ export {
   getAllVideos,
   getChannelVideos,
   getCurrentUserChannelVideos,
-  viewVideo,
   getSingleVideo,
 };
 
-// make views controller
-// add likedBy to all the video controllers
+// get all videos should have => all published videos with owner details and likes count
+// get channel videos should have => all published videos with owner details and likes count
+// get current user channel videos should have => all vidoes with [published and unpublished filter], with owner details and with liked users, disliked users and their counts
+// single video should have => one video with owner details with likes and dislikes count plus isliked and isdisliked flag
