@@ -7,7 +7,7 @@ import {
   updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getUserChannelVideos,
+  getChannelVideos,
   getCurrentUserChannelVideos,
   viewVideo,
   getSingleVideo,
@@ -38,7 +38,7 @@ videoRouter.route("/:video_id/delete_video").delete(verifyJWT, deleteVideo);
 
 videoRouter.route("/all").get(getAllVideos);
 
-videoRouter.route("/:userId").get(getUserChannelVideos);
+videoRouter.route("/:userId").get(getChannelVideos);
 
 videoRouter.route("/me/all").get(verifyJWT, getCurrentUserChannelVideos);
 

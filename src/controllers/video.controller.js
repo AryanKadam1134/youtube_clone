@@ -186,6 +186,14 @@ const getAllVideos = asynchandler(async (req, res) => {
     },
     {
       $lookup: {
+        from: "viewvideos",
+        localField: "_id",
+        foreignField: "video",
+        as: "views",
+      },
+    },
+    {
+      $lookup: {
         from: "likedislikes",
         let: { videoId: "$_id" },
         pipeline: [
@@ -235,6 +243,9 @@ const getAllVideos = asynchandler(async (req, res) => {
         dislikes: {
           $size: "$dislikes",
         },
+        views: {
+          $size: "$views",
+        },
       },
     },
   ]);
@@ -249,7 +260,7 @@ const getAllVideos = asynchandler(async (req, res) => {
 });
 
 // Fetch Channel Videos
-const getUserChannelVideos = asynchandler(async (req, res) => {
+const getChannelVideos = asynchandler(async (req, res) => {
   const { userId } = req.params;
 
   const channelUser = await User.findById(userId);
@@ -595,7 +606,7 @@ export {
   updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getUserChannelVideos,
+  getChannelVideos,
   getCurrentUserChannelVideos,
   viewVideo,
   getSingleVideo,

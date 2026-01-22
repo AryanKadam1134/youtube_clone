@@ -25,6 +25,7 @@ import userRouter from "./routes/user.routes.js";
 import videoRouter from "./routes/video.routes.js";
 import subscriptionRouter from "./routes/subscription.routes.js";
 import likedislikesRouter from "./routes/likedislikes.route.js";
+import viewVideoRouter from "./routes/viewvideo.routes.js";
 
 // use routes
 app.use("/api/v1/users", userRouter);
@@ -34,6 +35,8 @@ app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 
 app.use("/api/v1/likedislikes", likedislikesRouter);
+
+app.use("/api/v1/view_videos", viewVideoRouter);
 
 // http://localhost:8000/api/v1/users/register
 

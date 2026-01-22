@@ -3,7 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   dislikeVideo,
   likeVideo,
-} from "../controllers/likedislikes.controller.js";
+} from "../controllers/likedislike.controller.js";
 
 const likedislikesRouter = Router();
 

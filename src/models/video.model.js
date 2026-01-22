@@ -51,10 +51,6 @@ const videoSchema = new Schema(
         default: "image",
       },
     },
-    views: {
-      type: Number,
-      default: 0,
-    },
     isPublished: {
       type: Boolean,
       required: true,
