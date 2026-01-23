@@ -238,55 +238,9 @@ const getChannelVideos = asynchandler(async (req, res) => {
       },
     },
     {
-      $lookup: {
-        from: "likedislikes",
-        let: { videoId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              // if statement
-              $expr: {
-                // && statement
-                $and: [
-                  { $eq: ["$video", "$$videoId"] },
-                  { $eq: ["$reaction", "like"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "likes",
-      },
-    },
-    {
-      $lookup: {
-        from: "likedislikes",
-        let: { videoId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$video", "$$videoId"] },
-                  { $eq: ["$reaction", "dislike"] },
-                ],
-              },
-            },
-          },
-        ],
-        as: "dislikes",
-      },
-    },
-    {
       $addFields: {
         owner: {
           $first: "$owner",
-        },
-        likes: {
-          $size: "$likes",
-        },
-        dislikes: {
-          $size: "$dislikes",
         },
       },
     },
