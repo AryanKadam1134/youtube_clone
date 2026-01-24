@@ -1,8 +1,9 @@
-import { Comment } from "../models/comment.model";
-import { Video } from "../models/video.model";
-import apiError from "../utils/apiError";
-import apiRes from "../utils/apiRes";
-import asynchandler from "../utils/asyncHandler";
+import apiRes from "../utils/apiRes.js";
+import apiError from "../utils/apiError.js";
+import asynchandler from "../utils/asyncHandler.js";
+
+import { Video } from "../models/video.model.js";
+import { Comment } from "../models/comment.model.js";
 
 const addComment = asynchandler(async (req, res) => {
   const { video_id } = req.params;
@@ -41,13 +42,13 @@ const deleteComment = asynchandler(async (req, res) => {
     throw new apiError(400, "comment_id is required!");
   }
 
-  const deleteComment = await Comment.deleteOne(comment_id);
+  const deleteComment = await Comment.findByIdAndDelete(comment_id);
 
   if (!deleteComment) {
     throw new apiError(500, "couldn't delete comment!");
   }
 
-  return res.status(200).josn(new apiRes(200, {}, "comment deleted!"));
+  return res.status(200).json(new apiRes(200, {}, "comment deleted!"));
 });
 
 const getCommentsOnVideo = asynchandler(async (req, res) => {
@@ -68,7 +69,7 @@ const getCommentsOnVideo = asynchandler(async (req, res) => {
 
   return res
     .status(200)
-    .josn(new apiRes(200, comments, "comments fetched successfully!"));
+    .json(new apiRes(200, { comments }, "comments fetched successfully!"));
 });
 
 export { addComment, deleteComment, getCommentsOnVideo };

@@ -456,8 +456,6 @@ const getSingleVideo = asynchandler(async (req, res) => {
     throw new apiError(500, "video doesn't exists!");
   }
 
-  console.log("Single Video: ", video[0]);
-
   return res
     .status(200)
     .json(new apiRes(200, video[0], "video fetched successfully!"));
