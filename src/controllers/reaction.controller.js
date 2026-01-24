@@ -6,6 +6,17 @@ import { Reaction } from "../models/reaction.model.js";
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comment.model.js";
 
+const deleteReactionDocument = async (field, id) => {
+  if (!field || !id) return;
+
+  const deleteDocument = await Reaction.deleteMany({
+    [field]: id,
+    owner: req.user?._id,
+  });
+
+  return deleteDocument;
+};
+
 // Like Video
 const likeVideo = asynchandler(async (req, res) => {
   const loggedUserId = req.user?._id;
