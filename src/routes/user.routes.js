@@ -3,14 +3,14 @@ import {
   registerUser,
   loginUser,
   logoutUser,
-  refeshAccessToken,
+  refreshAccessToken,
   changeUserPassword,
   updateUserDetails,
   updateUserAvatar,
   updateUserCoverImage,
-  getCurrentUser,
+  getCurrentUserDetails,
   getCurrentUserChannelDetails,
-  getChannelDetails,
+  getUserChannelDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -35,7 +35,7 @@ userRouter.route("/login").post(loginUser);
 
 userRouter.route("/logout").post(verifyJWT, logoutUser);
 
-userRouter.route("/refreshtoken").post(refeshAccessToken);
+userRouter.route("/refreshtoken").post(refreshAccessToken);
 
 userRouter.route("/change-password").patch(verifyJWT, changeUserPassword);
 
@@ -49,10 +49,10 @@ userRouter
   .route("/me/update-coverImage")
   .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
-userRouter.route("/me").get(verifyJWT, getCurrentUser);
+userRouter.route("/me").get(verifyJWT, getCurrentUserDetails);
 
 userRouter.route("/me/channel").get(verifyJWT, getCurrentUserChannelDetails);
 
-userRouter.route("/:userId/channel").get(verifyJWT, getChannelDetails);
+userRouter.route("/:userId/channel").get(verifyJWT, getUserChannelDetails);
 
 export default userRouter;

@@ -208,7 +208,7 @@ const logoutUser = asynchandler(async (req, res) => {
 });
 
 // Refresh Access Token
-const refeshAccessToken = asynchandler(async (req, res) => {
+const refreshAccessToken = asynchandler(async (req, res) => {
   const incomingRefreshToken = req.cookies?.refreshToken;
 
   if (!incomingRefreshToken) {
@@ -404,67 +404,10 @@ const updateUserCoverImage = asynchandler(async (req, res) => {
 });
 
 // Fetch Current User
-const getCurrentUser = asynchandler(async (req, res) => {
+const getCurrentUserDetails = asynchandler(async (req, res) => {
   return res
     .status(200)
     .json(new apiRes(200, req.user, "current user fetched successfully!"));
-});
-
-// Fetch Current User Channel Details
-const getCurrentUserChannelDetails = asynchandler(async (req, res) => {
-  const channel = await User.aggregate([
-    {
-      $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
-    },
-    {
-      $lookup: {
-        from: "subscriptions",
-        localField: "_id",
-        foreignField: "channel",
-        as: "subscribers",
-      },
-    },
-    {
-      $lookup: {
-        from: "subscriptions",
-        localField: "_id",
-        foreignField: "subscriber",
-        as: "subscribedTo",
-      },
-    },
-    {
-      $addFields: {
-        subscribersCount: {
-          $size: "$subscribers",
-        },
-        subscribedChannelsCount: {
-          $size: "$subscribedTo",
-        },
-      },
-    },
-    {
-      $project: {
-        fullName: 1,
-        username: 1,
-        email: 1,
-        avatar: 1,
-        coverImage: 1,
-        subscribers: 1,
-        subscribedTo: 1,
-        subscribersCount: 1,
-        subscribedChannelsCount: 1,
-      },
-    },
-  ]);
-
-  if (!channel?.length) {
-    throw new apiError(500, "error while fetching channel details!");
-  }
-  // console.log("Channel: ", channel);
-
-  res
-    .status(200)
-    .json(new apiRes(200, channel[0], "channel details fetched successfully!"));
 });
 
 // Current user watch history
@@ -528,8 +471,65 @@ const getCurrentUserWatchHistory = asynchandler(async (req, res) => {
     );
 });
 
+// Fetch Current User Channel Details
+const getCurrentUserChannelDetails = asynchandler(async (req, res) => {
+  const channel = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(req.user?._id) },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        subscribedChannelsCount: {
+          $size: "$subscribedTo",
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        email: 1,
+        avatar: 1,
+        coverImage: 1,
+        subscribers: 1,
+        subscribedTo: 1,
+        subscribersCount: 1,
+        subscribedChannelsCount: 1,
+      },
+    },
+  ]);
+
+  if (!channel?.length) {
+    throw new apiError(500, "error while fetching channel details!");
+  }
+  // console.log("Channel: ", channel);
+
+  res
+    .status(200)
+    .json(new apiRes(200, channel[0], "channel details fetched successfully!"));
+});
+
 // Fetch Any User Channel Details
-const getChannelDetails = asynchandler(async (req, res) => {
+const getUserChannelDetails = asynchandler(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -596,12 +596,12 @@ export {
   registerUser,
   loginUser,
   logoutUser,
-  refeshAccessToken,
+  refreshAccessToken,
   changeUserPassword,
   updateUserDetails,
   updateUserAvatar,
   updateUserCoverImage,
-  getCurrentUser,
+  getCurrentUserDetails,
   getCurrentUserChannelDetails,
-  getChannelDetails,
+  getUserChannelDetails,
 };

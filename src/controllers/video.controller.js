@@ -203,7 +203,7 @@ const getAllVideos = asynchandler(async (req, res) => {
 });
 
 // Fetch Channel Videos
-const getChannelVideos = asynchandler(async (req, res) => {
+const getUserChannelVideos = asynchandler(async (req, res) => {
   const { userId } = req.params;
 
   const channelUser = await User.findById(userId);
@@ -301,7 +301,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "likedislikes",
+        from: "reactions",
         let: { videoId: "$_id" },
         pipeline: [
           {
@@ -322,7 +322,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "likedislikes",
+        from: "reactions",
         let: { videoId: "$_id" },
         pipeline: [
           {
@@ -403,7 +403,7 @@ const getSingleVideo = asynchandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "likedislikes",
+        from: "reactions",
         pipeline: [
           {
             $match: {
@@ -417,7 +417,7 @@ const getSingleVideo = asynchandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "likedislikes",
+        from: "reactions",
         pipeline: [
           {
             $match: {
@@ -434,26 +434,16 @@ const getSingleVideo = asynchandler(async (req, res) => {
         owner: {
           $first: "$owner",
         },
-        likes: {
-          $size: "$likes",
-        },
-        dislikes: {
-          $size: "$dislikes",
-        },
-        liked: {
+        isLiked: {
           $cond: {
-            if: {
-              $in: [req.user?._id, "$likes.owner"],
-            },
+            if: { $in: [req.user?._id, "$likes.owner"] },
             then: true,
             else: false,
           },
         },
-        disliked: {
+        isDisliked: {
           $cond: {
-            if: {
-              $in: [req.user?._id, "$dislikes.owner"],
-            },
+            if: { $in: [req.user?._id, "$dislikes.owner"] },
             then: true,
             else: false,
           },
@@ -462,21 +452,25 @@ const getSingleVideo = asynchandler(async (req, res) => {
     },
   ]);
 
-  if (!video) {
+  if (!video[0]) {
     throw new apiError(500, "video doesn't exists!");
   }
 
+  console.log("Single Video: ", video[0]);
+
   return res
     .status(200)
-    .json(new apiRes(200, video, "video fetched successfully!"));
+    .json(new apiRes(200, video[0], "video fetched successfully!"));
 });
+
+// Fetch video stats for logged user
 
 export {
   uploadVideo,
   updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getChannelVideos,
+  getUserChannelVideos,
   getCurrentUserChannelVideos,
   getSingleVideo,
 };

@@ -7,7 +7,7 @@ import {
   updateVideoDetails,
   deleteVideo,
   getAllVideos,
-  getChannelVideos,
+  getUserChannelVideos,
   getCurrentUserChannelVideos,
   getSingleVideo,
 } from "../controllers/video.controller.js";
@@ -37,7 +37,7 @@ videoRouter.route("/:video_id/delete_video").delete(verifyJWT, deleteVideo);
 
 videoRouter.route("/all").get(getAllVideos);
 
-videoRouter.route("/:userId").get(getChannelVideos);
+videoRouter.route("/:userId").get(getUserChannelVideos);
 
 videoRouter.route("/me/all").get(verifyJWT, getCurrentUserChannelVideos);
 
