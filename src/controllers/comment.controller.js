@@ -4,6 +4,7 @@ import asynchandler from "../utils/asyncHandler.js";
 
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comment.model.js";
+import { deleteReactionDocument } from "./reaction.controller.js";
 
 const addComment = asynchandler(async (req, res) => {
   const { video_id } = req.params;
@@ -36,6 +37,8 @@ const addComment = asynchandler(async (req, res) => {
 });
 
 const deleteComment = asynchandler(async (req, res) => {
+  const loggedUserId = req.user?._id;
+
   const { comment_id } = req.params;
 
   if (!comment_id) {
@@ -44,7 +47,11 @@ const deleteComment = asynchandler(async (req, res) => {
 
   const comment = await Comment.findById(comment_id);
 
-  if (comment?._id?.toString() !== req.user?._id?.toString()) {
+  if (!comment) {
+    throw new apiError(404, "document does not exist!");
+  }
+
+  if (comment?.owner?.toString() !== loggedUserId?.toString()) {
     throw new apiError(
       401,
       "you do not have permission to delete this comment!"
@@ -57,6 +64,9 @@ const deleteComment = asynchandler(async (req, res) => {
     throw new apiError(500, "couldn't delete comment!");
   }
 
+  // Note: This will delete all the likes and dislikes related to this comment
+  await deleteReactionDocument("comment", comment_id);
+
   return res.status(200).json(new apiRes(200, {}, "comment deleted!"));
 });
 
@@ -68,7 +78,6 @@ const getCommentsOnVideo = asynchandler(async (req, res) => {
   }
 
   const comments = await Comment.find({
-    owner: req.user?._id,
     video: video_id,
   });
 
