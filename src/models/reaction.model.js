@@ -16,10 +16,6 @@ const reactionSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Comment",
     },
-    tweet: {
-      type: Schema.Types.ObjectId,
-      ref: "Tweet",
-    },
     video: {
       type: Schema.Types.ObjectId,
       ref: "Video",

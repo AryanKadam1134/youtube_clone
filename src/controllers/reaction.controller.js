@@ -6,24 +6,6 @@ import { Reaction } from "../models/reaction.model.js";
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comment.model.js";
 
-// For (Video, Comments, Tweets)
-// This will delete all the reactions related to above mentioned fields
-const deleteReactionDocument = async (field, field_id) => {
-  if (!field || !field_id) return;
-
-  const deleteDocument = await Reaction.deleteMany({
-    [field]: field_id,
-  });
-
-  if (!deleteDocument) {
-    console.log("couldn't delete reaction document!");
-  }
-
-  console.log("reaction document deleted!");
-
-  return deleteDocument;
-};
-
 // Like Video
 const likeVideo = asynchandler(async (req, res) => {
   const loggedUserId = req.user?._id;
@@ -268,10 +250,4 @@ const dislikeComment = asynchandler(async (req, res) => {
   return res.status(200).json(new apiRes(200, comment, "comment disliked!"));
 });
 
-export {
-  likeVideo,
-  dislikeVideo,
-  likeComment,
-  dislikeComment,
-  deleteReactionDocument,
-};
+export { likeVideo, dislikeVideo, likeComment, dislikeComment };

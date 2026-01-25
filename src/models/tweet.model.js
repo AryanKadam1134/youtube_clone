@@ -11,6 +11,16 @@ const tweetSchema = new Schema(
       ref: "User",
       required: true,
     },
+    likesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    dislikesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );

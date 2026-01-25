@@ -4,7 +4,7 @@ import asynchandler from "../utils/asyncHandler.js";
 
 import { Video } from "../models/video.model.js";
 import { Comment } from "../models/comment.model.js";
-import { deleteReactionDocument } from "./reaction.controller.js";
+import { Reaction } from "../models/reaction.model.js";
 
 const addComment = asynchandler(async (req, res) => {
   const { video_id } = req.params;
@@ -65,7 +65,7 @@ const deleteComment = asynchandler(async (req, res) => {
   }
 
   // Note: This will delete all the likes and dislikes related to this comment
-  await deleteReactionDocument("comment", comment_id);
+  await Reaction.deleteMany({ comment: comment_id });
 
   return res.status(200).json(new apiRes(200, {}, "comment deleted!"));
 });

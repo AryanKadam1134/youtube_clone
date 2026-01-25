@@ -7,10 +7,12 @@ import {
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 
+import mongoose from "mongoose";
+
 import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
-
-import mongoose from "mongoose";
+import { Reaction } from "../models/reaction.model.js";
+import { Comment } from "../models/comment.model.js";
 
 // Uplaod Video
 const uploadVideo = asynchandler(async (req, res) => {
@@ -152,6 +154,23 @@ const deleteVideo = asynchandler(async (req, res) => {
   if (!video?.thumbnail?.public_id) {
     await deleteFromCloudinary(video?.thumbnail);
   }
+
+  const comments = await Comment.find(
+    {
+      video: video_id,
+    },
+    { _id: 1 }
+  );
+
+  const commentIds = comments.map((c) => c?._id);
+
+  // Note: This will delete all the likes and dislikes related to this video
+  await Reaction.deleteMany({
+    $or: [{ video: video_id }, { comment: { $in: commentIds } }],
+  });
+
+  // Note: This will delete all the comments related to this video
+  await Comment.deleteMany({ video: video_id });
 
   await Video.findByIdAndDelete(video_id);
 
