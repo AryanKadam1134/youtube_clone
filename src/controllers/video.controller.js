@@ -13,6 +13,7 @@ import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
 import { Reaction } from "../models/reaction.model.js";
 import { Comment } from "../models/comment.model.js";
+import { ViewVideo } from "../models/viewVideo.model.js";
 
 // Uplaod Video
 const uploadVideo = asynchandler(async (req, res) => {
@@ -171,6 +172,9 @@ const deleteVideo = asynchandler(async (req, res) => {
 
   // Note: This will delete all the comments related to this video
   await Comment.deleteMany({ video: video_id });
+
+  // Note: This will delete all the views related to this video
+  await ViewVideo.deleteMany({ video: video_id });
 
   await Video.findByIdAndDelete(video_id);
 

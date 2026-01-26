@@ -421,7 +421,7 @@ const getCurrentUserWatchHistory = asynchandler(async (req, res) => {
     // Into users
     {
       $lookup: {
-        form: "videos",
+        from: "videos",
         localField: "watchHistory",
         foreignField: "_id",
         as: "watchHistory",
@@ -456,11 +456,13 @@ const getCurrentUserWatchHistory = asynchandler(async (req, res) => {
     },
   ]);
 
+  // console.log("History: ", history);
+
   if (!history?.length) {
     throw new apiError(500, "error fetching watch history!");
   }
 
-  res
+  return res
     .status(200)
     .json(
       new apiRes(
@@ -602,6 +604,7 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getCurrentUserDetails,
+  getCurrentUserWatchHistory,
   getCurrentUserChannelDetails,
   getUserChannelDetails,
 };

@@ -1,3 +1,4 @@
+import { User } from "../models/user.model.js";
 import { Video } from "../models/video.model.js";
 import { ViewVideo } from "../models/viewVideo.model.js";
 
@@ -33,6 +34,12 @@ const viewVideo = asynchandler(async (req, res) => {
 
     await Video.findByIdAndUpdate(video_id, {
       $inc: { views: 1 },
+    });
+
+    await User.findByIdAndUpdate(loggedUserId, {
+      $push: {
+        watchHistory: video_id,
+      },
     });
   }
 

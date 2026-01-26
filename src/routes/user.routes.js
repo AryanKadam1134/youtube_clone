@@ -9,6 +9,7 @@ import {
   updateUserAvatar,
   updateUserCoverImage,
   getCurrentUserDetails,
+  getCurrentUserWatchHistory,
   getCurrentUserChannelDetails,
   getUserChannelDetails,
 } from "../controllers/user.controller.js";
@@ -50,6 +51,10 @@ userRouter
   .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
 userRouter.route("/me").get(verifyJWT, getCurrentUserDetails);
+
+userRouter
+  .route("/me/watch-history")
+  .get(verifyJWT, getCurrentUserWatchHistory);
 
 userRouter.route("/me/channel").get(verifyJWT, getCurrentUserChannelDetails);
 
