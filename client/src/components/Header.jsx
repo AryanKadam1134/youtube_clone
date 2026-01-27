@@ -1,8 +1,12 @@
 import React from "react";
+
 import { Input } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Header() {
+  const { user, token, logout } = useAuth();
+
   const navigate = useNavigate();
 
   return (
@@ -22,12 +26,38 @@ function Header() {
       </div>
 
       <div className="flex justify-between items-center gap-3">
-        <button
-          onClick={() => navigate("/login")}
-          className="px-3 py-2 bg-red-500 rounded-lg cursor-pointer"
-        >
-          Login
-        </button>
+        {token ? (
+          <>
+            <img
+              src={user?.avatar?.url}
+              alt="Youtube Logo"
+              className="size-[50px] object-contain"
+            />
+
+            <button
+              onClick={logout}
+              className="px-3 py-2 bg-red-500 rounded-lg cursor-pointer"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => navigate("/login")}
+              className="px-3 py-2 hover:bg-gray-900 rounded-full cursor-pointer"
+            >
+              Sign In
+            </button>
+
+            <button
+              onClick={() => navigate("/register")}
+              className="px-3 py-2 bg-gray-600 hover:bg-gray-400 rounded-full cursor-pointer"
+            >
+              Sign up
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

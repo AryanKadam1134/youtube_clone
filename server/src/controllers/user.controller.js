@@ -134,10 +134,10 @@ const loginUser = asynchandler(async (req, res) => {
   // 6. Send in cookies
 
   // 1. Done
-  const { username, email, password } = req.body;
+  const { userCredential, password } = req.body;
 
   // 2. Done
-  if (!(username || email)) {
+  if (!userCredential) {
     throw new apiError(400, "username or email is required!");
   }
 
@@ -147,7 +147,7 @@ const loginUser = asynchandler(async (req, res) => {
 
   // 3. Done
   const userExist = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: userCredential }, { email: userCredential }],
   });
 
   if (!userExist) {
