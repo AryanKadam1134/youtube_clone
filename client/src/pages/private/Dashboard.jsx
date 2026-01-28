@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+
+import { apiEndpoints } from "../../api";
 
 export default function Dashboard() {
   const [videos, setVideos] = useState(null);
 
   const fetchAllVideos = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/videos/all");
+      const res = await apiEndpoints.getAllVideos();
 
       const data = res.data;
       setVideos(data?.data?.videos);

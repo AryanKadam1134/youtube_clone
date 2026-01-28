@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Input } from "antd";
 import { useNavigate } from "react-router-dom";
+import { Input } from "antd";
 
 export default function Register() {
   const navigate = useNavigate();

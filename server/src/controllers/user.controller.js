@@ -205,10 +205,10 @@ const logoutUser = asynchandler(async (req, res) => {
   );
 
   return res
-    .status(204)
+    .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new apiRes(204, {}, "user logged out successfully!"));
+    .json(new apiRes(200, {}, "user logged out successfully!"));
 });
 
 // Refresh Access Token

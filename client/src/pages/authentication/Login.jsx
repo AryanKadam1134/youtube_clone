@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Input } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { apiEndpoints } from "../../api";
 
 export default function Login() {
   const { login } = useAuth();
 
   const navigate = useNavigate();
 
-  const [sendpayload, setSendPayload] = useState({
+  const [sendPayload, setSendPayload] = useState({
     userCredential: null,
     password: null,
   });
@@ -23,10 +23,7 @@ export default function Login() {
 
   const handleSubmit = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/v1/users/login",
-        sendpayload,
-      );
+      const res = await apiEndpoints.login(sendPayload);
 
       const data = res.data;
       const token = data?.data?.accessToken;
@@ -45,32 +42,34 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-[#0f0f0f] text-white text-sm">
-      <div className="flex flex-col items-center gap-3">
+    <div className="flex justify-center items-center p-20 bg-[#0f0f0f] text-white text-sm">
+      <div className="flex flex-col items-center justify-center gap-5">
         <p className="text-[18px]">Login</p>
 
         <Input
           placeholder="username or email"
-          value={sendpayload?.userCredential}
+          value={sendPayload?.userCredential}
           onChange={(e) => changePayload("userCredential", e.target.value)}
+          allowClear
         />
 
-        <Input
+        <Input.Password
           placeholder="password"
-          value={sendpayload?.password}
+          value={sendPayload?.password}
           onChange={(e) => changePayload("password", e.target.value)}
+          allowClear
         />
 
         <button
           onClick={handleSubmit}
-          className="px-3 py-1 bg-white text-black hover:bg-gray-300 rounded-lg cursor-pointer"
+          className="px-3 py-1 bg-white text-black hover:bg-gray-300 w-full rounded-md cursor-pointer"
         >
           Login
         </button>
 
         <button
           onClick={() => navigate(-1)}
-          className="px-3 py-1 bg-white text-black hover:bg-gray-300 rounded-lg cursor-pointer"
+          className="px-3 py-1 bg-white text-black hover:bg-gray-300 rounded-md cursor-pointer"
         >
           back
         </button>

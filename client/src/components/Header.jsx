@@ -12,7 +12,10 @@ function Header() {
   return (
     <div className="flex justify-between items-center p-2 bg-[#0f0f0f] text-white text-sm">
       {/* Logo & Header */}
-      <div className="flex justify-center items-center gap-3">
+      <div
+        onClick={() => navigate("/dashboard")}
+        className="flex justify-center items-center gap- cursor-pointer"
+      >
         <img
           src="https://static.vecteezy.com/system/resources/thumbnails/018/930/572/small/youtube-logo-youtube-icon-transparent-free-png.png"
           alt="Youtube Logo"
@@ -30,8 +33,9 @@ function Header() {
           <>
             <img
               src={user?.avatar?.url}
-              alt="Youtube Logo"
-              className="size-[50px] object-contain"
+              alt="User Logo"
+              className="size-[50px] object-contain cursor-pointer"
+              onClick={() => navigate("/profile-page")}
             />
 
             <button
