@@ -11,7 +11,7 @@ import Dashboard from "./pages/private/Dashboard";
 import ProfilePage from "./pages/private/ProfilePage";
 
 import Login from "./pages/authentication/Login";
-import Register from "./pages/authentication/Register";
+
 
 import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
@@ -49,10 +49,7 @@ function App() {
           element={<Navigate to={token ? "/dashboard" : "/home"} />}
         />
 
-        <Route
-          path="/register"
-          element={!token ? <Register /> : <Navigate to="/dashboard" />}
-        />
+
 
         <Route
           path="/login"

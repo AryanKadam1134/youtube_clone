@@ -49,16 +49,9 @@ function Header() {
           <>
             <button
               onClick={() => navigate("/login")}
-              className="px-3 py-2 hover:bg-gray-900 rounded-full cursor-pointer"
+              className="px-3 py-2 text-white hover:text-black hover:bg-slate-300 border border-slate-300 rounded-md transition-colors cursor-pointer"
             >
-              Sign In
-            </button>
-
-            <button
-              onClick={() => navigate("/register")}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-400 rounded-full cursor-pointer"
-            >
-              Sign up
+              Sign In / Sign up
             </button>
           </>
         )}
