@@ -8,12 +8,13 @@ import {
 } from "react-router-dom"; // React Router Dom
 
 import Dashboard from "./pages/private/Dashboard";
+import ProfilePage from "./pages/private/ProfilePage";
+
 import Login from "./pages/authentication/Login";
 import Register from "./pages/authentication/Register";
 
 import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
-import ProfilePage from "./pages/private/ProfilePage";
 
 function AuthenticatedLayout() {
   return (
@@ -47,9 +48,15 @@ function App() {
           path="/"
           element={<Navigate to={token ? "/dashboard" : "/home"} />}
         />
+
         <Route
-          path="/home"
-          element={!token ? <UnauthenticatedLayout /> : <AuthenticatedLayout />}
+          path="/register"
+          element={!token ? <Register /> : <Navigate to="/dashboard" />}
+        />
+
+        <Route
+          path="/login"
+          element={!token ? <Login /> : <Navigate to="/dashboard" />}
         />
 
         {/* Authenticated Routes with Header */}
@@ -67,8 +74,6 @@ function App() {
           }
         >
           <Route path="/home" element={<Dashboard />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
     </Router>

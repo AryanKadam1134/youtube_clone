@@ -6,9 +6,12 @@ export default function Register() {
   const navigate = useNavigate();
 
   const [sendpayload, setSendPayload] = useState({
-    userCredential: null,
+    username: null,
     password: null,
+    avatar: null,
   });
+
+  console.log("Register Paylaod: ", sendpayload);
 
   const changePayload = (field, value) => {
     setSendPayload((prev) => ({
@@ -24,18 +27,26 @@ export default function Register() {
 
         <Input
           placeholder="username or email"
-          value={sendpayload?.userCredential}
-          onChange={(e) => changePayload("userCredential", e.target.value)}
+          value={sendpayload?.username}
+          onChange={(e) => changePayload("username", e.target.value)}
         />
 
-        <Input
+        <Input.Password
           placeholder="password"
           value={sendpayload?.password}
           onChange={(e) => changePayload("password", e.target.value)}
         />
 
+        <Input
+          type="file"
+          placeholder="Choose Avatar"
+          value={sendpayload?.avatar}
+          onChange={(e) => changePayload("avatar", e.target.value)}
+          allowClear
+        />
+
         <button className="px-3 py-1 bg-white text-black hover:bg-gray-300 rounded-lg cursor-pointer">
-          Login
+          Register
         </button>
 
         <button

@@ -13,7 +13,7 @@ function Header() {
     <div className="flex justify-between items-center p-2 bg-[#0f0f0f] text-white text-sm">
       {/* Logo & Header */}
       <div
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate(token ? "/dashboard" : "/home")}
         className="flex justify-center items-center gap- cursor-pointer"
       >
         <img

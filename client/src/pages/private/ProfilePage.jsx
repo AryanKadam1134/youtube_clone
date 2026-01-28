@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Select } from "antd";
 import { apiEndpoints } from "../../api";
 
-function ProfilePage() {
+export default function ProfilePage() {
   const [myAllVideos, setMyAllVideos] = useState([]);
 
   const getAllMyVideos = async (value = "all") => {
@@ -63,5 +63,3 @@ function ProfilePage() {
     </div>
   );
 }
-
-export default ProfilePage;

@@ -42,7 +42,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center p-20 bg-[#0f0f0f] text-white text-sm">
+    <div className="flex justify-center items-center h-screen bg-[#0f0f0f] text-white text-sm">
       <div className="flex flex-col items-center justify-center gap-5">
         <p className="text-[18px]">Login</p>
 
