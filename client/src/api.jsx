@@ -7,15 +7,15 @@ const api = axios.create({
   baseURL: BASE_URL, // Use relative paths with proxy
   timeout: 10000,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+  // headers: {
+  //   "Content-Type": "application/json",
+  //   Accept: "application/json",
+  // },
 });
 
 export const apiEndpoints = {
   // Register
-  register: (body) => api.post(`${BASE_URL}/users/register`, body),
+  register: (data) => api.post(`${BASE_URL}/users/register`, data),
 
   // Login
   login: (body) => api.post(`${BASE_URL}/users/login`, body),
