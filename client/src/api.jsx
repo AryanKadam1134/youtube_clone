@@ -28,5 +28,5 @@ export const apiEndpoints = {
 
   // All Current User Videos
   updateVideoDetails: (videoId, body) =>
-    api.get(`${BASE_URL}/videos/:${videoId}}update_video`, body),
+    api.patch(`${BASE_URL}/videos/${videoId}/update_video`, body),
 };

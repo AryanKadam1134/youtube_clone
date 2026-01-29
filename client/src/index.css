@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .ant-input::placeholder {

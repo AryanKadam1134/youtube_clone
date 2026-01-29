@@ -377,7 +377,7 @@ const getCurrentUserChannelVideos = asynchandler(async (req, res) => {
     },
   ]);
 
-  if (!userVideos?.length) {
+  if (!userVideos) {
     throw new apiError(500, "error fetching channel videos!");
   }
 

@@ -31,16 +31,18 @@ function Header() {
       <div className="flex justify-between items-center gap-3">
         {token ? (
           <>
-            <img
-              src={user?.avatar?.url}
-              alt="User Logo"
-              className="size-[50px] object-contain cursor-pointer"
-              onClick={() => navigate("/profile-page")}
-            />
+            <div className="rounded-full border border-black hover:border-white cursor-pointer">
+              <img
+                src={user?.avatar?.url}
+                alt="User Logo"
+                className="size-[30px] rounded-full object-contain"
+                onClick={() => navigate("/profile-page")}
+              />
+            </div>
 
             <button
               onClick={logout}
-              className="px-3 py-2 bg-red-500 rounded-lg cursor-pointer"
+              className="px-2 py-1 bg-red-500 hover:bg-red-600 rounded-md cursor-pointer"
             >
               Logout
             </button>

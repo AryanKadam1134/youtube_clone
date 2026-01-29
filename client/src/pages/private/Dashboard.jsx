@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-import { apiEndpoints } from "../../api";
 import VideoFile from "../../components/VideoFile";
+
+import { apiEndpoints } from "../../api";
 
 export default function Dashboard() {
   const [videos, setVideos] = useState(null);
@@ -26,7 +27,7 @@ export default function Dashboard() {
     <div className="grid grid-cols-3 gap-5 bg-[#0f0f0f]">
       {videos?.map((video, idx) => (
         <div key={idx}>
-          <VideoFile video={video} />
+          <VideoFile video={video} refresh={fetchAllVideos} />
         </div>
       ))}
     </div>

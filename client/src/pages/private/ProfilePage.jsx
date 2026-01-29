@@ -6,9 +6,11 @@ import VideoFile from "../../components/VideoFile";
 export default function ProfilePage() {
   const [myAllVideos, setMyAllVideos] = useState([]);
 
-  const getAllMyVideos = async (value = "all") => {
+  const [filter, setFilter] = useState("all");
+
+  const getAllMyVideos = async () => {
     try {
-      const res = await apiEndpoints.getAllMyVideos({ isPublished: value });
+      const res = await apiEndpoints.getAllMyVideos({ isPublished: filter });
 
       const data = res.data?.data?.videos;
 
@@ -21,7 +23,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     getAllMyVideos();
-  }, []);
+  }, [filter]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -36,14 +38,14 @@ export default function ProfilePage() {
             { value: false, label: "Unpublished" },
           ]}
           defaultValue="all"
-          onChange={(value) => getAllMyVideos(value)}
+          onChange={(value) => setFilter(value)}
         />
       </div>
 
       <div className="grid grid-cols-3 gap-5 bg-[#0f0f0f]">
         {myAllVideos?.map((video, idx) => (
           <div key={idx}>
-            <VideoFile video={video} />
+            <VideoFile video={video} refresh={getAllMyVideos} />
           </div>
         ))}
       </div>
