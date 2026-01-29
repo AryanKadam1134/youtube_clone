@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { apiEndpoints } from "../../api";
+import VideoFile from "../../components/VideoFile";
 
 export default function Dashboard() {
   const [videos, setVideos] = useState(null);
@@ -11,7 +12,7 @@ export default function Dashboard() {
 
       const data = res.data;
       setVideos(data?.data?.videos);
-      console.log("Videos: ", data);
+      // console.log("Videos: ", data);
     } catch (error) {
       console.error("Error fetching all videos: ", error);
     }
@@ -24,23 +25,8 @@ export default function Dashboard() {
   return (
     <div className="grid grid-cols-3 gap-5 bg-[#0f0f0f]">
       {videos?.map((video, idx) => (
-        <div key={idx} className="flex flex-col gap-2 text-sm">
-          <img
-            className="h-[250px] rounded-lg object-cover"
-            src={video?.thumbnail?.url}
-          />
-
-          <div className="flex justify-start items-start gap-2">
-            <img
-              src={video?.owner?.avatar?.url}
-              alt="User Avatar"
-              className="size-[30px] rounded-full object-cover"
-            />
-            <div className="flex flex-col justify-center items-start gap-1 text-white">
-              <p className="font-semibold text-[14px]">{video?.title}</p>
-              <p className="text-[12px]">{video?.views} views</p>
-            </div>
-          </div>
+        <div key={idx}>
+          <VideoFile video={video} />
         </div>
       ))}
     </div>

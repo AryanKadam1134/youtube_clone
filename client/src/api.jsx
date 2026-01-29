@@ -23,6 +23,10 @@ export const apiEndpoints = {
   // All Videos
   getAllVideos: () => api.get(`${BASE_URL}/videos/all`),
 
-  // All Videos
+  // All Current User Videos
   getAllMyVideos: (params) => api.get(`${BASE_URL}/videos/me/all`, { params }),
+
+  // All Current User Videos
+  updateVideoDetails: (videoId, body) =>
+    api.get(`${BASE_URL}/videos/:${videoId}}update_video`, body),
 };

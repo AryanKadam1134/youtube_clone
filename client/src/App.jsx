@@ -12,7 +12,6 @@ import ProfilePage from "./pages/private/ProfilePage";
 
 import Login from "./pages/authentication/Login";
 
-
 import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
 
@@ -48,8 +47,6 @@ function App() {
           path="/"
           element={<Navigate to={token ? "/dashboard" : "/home"} />}
         />
-
-
 
         <Route
           path="/login"
