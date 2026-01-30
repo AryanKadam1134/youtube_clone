@@ -42,7 +42,7 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-5 bg-[#0f0f0f]">
+      <div className="grid grid-cols-3 gap-3 bg-[#0f0f0f]">
         {myAllVideos?.map((video, idx) => (
           <div key={idx}>
             <VideoFile video={video} refresh={getAllMyVideos} />

@@ -11,7 +11,7 @@ function Header() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-between items-center px-4 py-2 w-full text-sm text-white bg-[#0f0f0f]">
+    <div className="flex justify-between items-center px-4 py-2 w-full text-sm text-[#aaaaaa] bg-[#0f0f0f]">
       <div className="flex items-center gap-5">
         <Menu
           size={34}

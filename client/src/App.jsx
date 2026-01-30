@@ -15,8 +15,9 @@ import Login from "./pages/authentication/Login";
 
 import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
+import VideoView from "./components/VideoView";
 
-function AuthenticatedLayout() {
+function CommonView() {
   return (
     <div className="flex flex-col items-start">
       <Header />
@@ -31,19 +32,24 @@ function AuthenticatedLayout() {
   );
 }
 
-function UnauthenticatedLayout() {
+function WideView() {
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start w-full">
       <Header />
 
-      <div className="flex items-start">
-        <Sidebar />
-        <div className="p-5 bg-[#0f0f0f]">
-          <Outlet />
-        </div>
+      <div className="p-5 bg-[#0f0f0f] w-full">
+        <Outlet />
       </div>
     </div>
   );
+}
+
+function AuthenticatedLayout() {
+  return <CommonView />;
+}
+
+function UnauthenticatedLayout() {
+  return <CommonView />;
 }
 
 function App() {
@@ -68,6 +74,10 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-page" element={<ProfilePage />} />
+        </Route>
+
+        <Route element={token ? <WideView /> : <Navigate to="/home" />}>
+          <Route path="/video-view" element={<VideoView />} />
         </Route>
 
         {/* Unauthenticated Routes with Header */}

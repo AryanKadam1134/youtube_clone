@@ -12,9 +12,12 @@ import OverflowMenu from "./OverflowMenu";
 import { apiEndpoints } from "../api";
 
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function VideoFile({ video, refresh }) {
   const { user, token } = useAuth();
+
+  const navigate = useNavigate();
 
   const isOwner = user?._id === video?.owner?._id;
 
@@ -63,7 +66,10 @@ export default function VideoFile({ video, refresh }) {
   const overflowContent = <OverflowMenu overflowItems={overflowItems} />;
 
   return (
-    <div className="flex items-center justify-center">
+    <div
+      onClick={() => navigate("/video-view", { state: { videoId: videoId } })}
+      className="flex items-center justify-center p-2 rounded-md hover:bg-[#212121] cursor-pointer"
+    >
       <div className="flex flex-col gap-2 text-sm">
         <img
           className="w-full max-w-[35em] aspect-video overflow-hidden rounded-lg"
@@ -91,15 +97,17 @@ export default function VideoFile({ video, refresh }) {
           </div>
 
           {token && (
-            <Popover
-              content={overflowContent}
-              trigger="click"
-              overlayInnerStyle={{ padding: "0px" }}
-            >
-              <div className="p-1 hover:bg-gray-800 rounded-full transition-colors cursor-pointer">
-                <EllipsisVertical size={18} className="text-white" />
-              </div>
-            </Popover>
+            <div onClick={(e) => e.stopPropagation()}>
+              <Popover
+                content={overflowContent}
+                trigger="click"
+                overlayInnerStyle={{ padding: "0px" }}
+              >
+                <div className="p-1 hover:bg-[#3A3A3A] rounded-full transition-colors cursor-pointer">
+                  <EllipsisVertical size={18} className="text-white" />
+                </div>
+              </Popover>
+            </div>
           )}
         </div>
       </div>

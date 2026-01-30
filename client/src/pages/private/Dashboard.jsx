@@ -24,7 +24,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="grid grid-cols-3 gap-5 bg-[#0f0f0f]">
+    <div className="grid grid-cols-3 gap-3 bg-[#0f0f0f]">
       {videos?.map((video, idx) => (
         <div key={idx}>
           <VideoFile video={video} refresh={fetchAllVideos} />
