@@ -7,6 +7,7 @@ import {
   Outlet,
 } from "react-router-dom"; // React Router Dom
 
+import Sidebar from "./pages/private/Sidebar";
 import Dashboard from "./pages/private/Dashboard";
 import ProfilePage from "./pages/private/ProfilePage";
 
@@ -17,10 +18,14 @@ import { useAuth } from "./context/AuthContext";
 
 function AuthenticatedLayout() {
   return (
-    <div>
+    <div className="flex flex-col items-start">
       <Header />
-      <div className="p-5 bg-[#0f0f0f]">
-        <Outlet />
+
+      <div className="flex items-start">
+        <Sidebar />
+        <div className="p-5 bg-[#0f0f0f]">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
@@ -28,10 +33,14 @@ function AuthenticatedLayout() {
 
 function UnauthenticatedLayout() {
   return (
-    <div>
+    <div className="flex flex-col items-start">
       <Header />
-      <div className="p-5 bg-[#0f0f0f]">
-        <Outlet />
+
+      <div className="flex items-start">
+        <Sidebar />
+        <div className="p-5 bg-[#0f0f0f]">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
