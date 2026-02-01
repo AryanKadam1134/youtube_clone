@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 
-import { useLocation } from "react-router-dom";
 import { apiEndpoints } from "../api";
+import { Input } from "antd";
 
 export default function VideoView() {
   const location = useLocation();
   const videoId = location?.state?.videoId;
 
   const [video, setVideo] = useState(null);
+  const [comments, setComments] = useState(null);
+  const [addComment, setAddComment] = useState(null);
 
   const video_Id = video?._id;
   const videoTitle = video?.title;
@@ -41,6 +45,47 @@ export default function VideoView() {
     }
   };
 
+  const fetchVideoComments = async () => {
+    try {
+      const res = await apiEndpoints.allComments(videoId);
+
+      const data = res.data;
+
+      setComments(data?.data?.comments);
+      console.log("Comments on Video: ", data);
+    } catch (error) {
+      console.error("Error fetching Comments: ", error);
+    }
+  };
+
+  const addVideoComment = async () => {
+    try {
+      const res = await apiEndpoints.addComment(videoId, {
+        comment: addComment,
+      });
+
+      const data = res.data;
+
+      fetchVideoComments();
+      console.log("Comment Added: ", data);
+    } catch (error) {
+      console.error("Comment Added: ", error);
+    }
+  };
+
+  const deleteVideoComment = async (commentId) => {
+    try {
+      const res = await apiEndpoints.deleteComment(commentId);
+
+      const data = res.data;
+
+      fetchVideoComments();
+      console.log("Comment deleted: ", data);
+    } catch (error) {
+      console.error("Comment deleted: ", error);
+    }
+  };
+
   const likeDislikeVideo = async (reaction, videoId) => {
     try {
       let res;
@@ -61,50 +106,85 @@ export default function VideoView() {
 
   useEffect(() => {
     fetchVideo();
-  }, [videoId]);
+    fetchVideoComments();
+  }, []);
 
   return (
-    <div className="flex flex-col items-start gap-2 text-sm w-[70%]">
-      <video className="w-full" src={videoFile} controls />
+    <div className="flex flex-col gap-5 w-[70%]">
+      <div className="flex flex-col items-start gap-2 text-sm">
+        <video className="w-full" src={videoFile} controls />
 
-      <div className="flex items-start justify-between w-full">
-        <div className="flex justify-start items-start gap-2">
-          <img
-            src={videoOwnerAvatar}
-            alt="User Avatar"
-            className="size-[30px] mt-1 rounded-full object-cover"
-          />
+        <div className="flex items-start justify-between w-full">
+          <div className="flex justify-start items-start gap-2">
+            <img
+              src={videoOwnerAvatar}
+              alt="User Avatar"
+              className="size-[30px] mt-1 rounded-full object-cover"
+            />
 
-          <div className="flex flex-col justify-center items-start gap-0.5 text-white">
-            <p className="font-semibold text-[14px]">{videoTitle}</p>
-            <p className="text-[#aaaaaa] hover:text-white text-[11px] cursor-pointer">
-              {ownerName}
-            </p>
-            <p className="text-[#aaaaaa] text-[11px]">
-              {videoViews} views • {timeAgo}
-            </p>
+            <div className="flex flex-col justify-center items-start gap-0.5 text-white">
+              <p className="font-semibold text-[14px]">{videoTitle}</p>
+              <p className="text-[#aaaaaa] hover:text-white text-[11px] cursor-pointer">
+                {ownerName}
+              </p>
+              <p className="text-[#aaaaaa] text-[11px]">
+                {videoViews} views • {timeAgo}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-5 px-2 py-1.5 text-white bg-[#3d3d3d] rounded-full">
+            <div className="flex items-center justify-center gap-2">
+              <ThumbsUp
+                onClick={() => likeDislikeVideo("like", videoId)}
+                size={22}
+                className={`${isLiked && `fill-white`} cursor-pointer`}
+              />
+              <p className="font-semibold text-[12px]">{likesCount}</p>
+            </div>
+
+            <div className="flex items-center justify-center gap-2">
+              <ThumbsDown
+                onClick={() => likeDislikeVideo("dislike", videoId)}
+                size={22}
+                className={`${isDisliked && `fill-white`} cursor-pointer`}
+              />
+              <p className="font-semibold text-[12px]">{dislikesCount}</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex items-center gap-5 px-2 py-1.5 text-white bg-[#3d3d3d] rounded-full">
-          <div className="flex items-center justify-center gap-2">
-            <ThumbsUp
-              onClick={() => likeDislikeVideo("like", videoId)}
-              size={22}
-              className={`${isLiked && `fill-white`} cursor-pointer`}
-            />
-            <p className="font-semibold text-[12px]">{likesCount}</p>
-          </div>
+      <div className="flex justify-start items-center gap-3">
+        <Input
+          style={{ width: 200 }}
+          placeholder="Add Comment"
+          onChange={(e) => setAddComment(e.target.value)}
+        />
 
-          <div className="flex items-center justify-center gap-2">
-            <ThumbsDown
-              onClick={() => likeDislikeVideo("dislike", videoId)}
-              size={22}
-              className={`${isDisliked && `fill-white`} cursor-pointer`}
-            />
-            <p className="font-semibold text-[12px]">{dislikesCount}</p>
+        <button
+          onClick={addVideoComment}
+          className="px-2 py-1 text-white hover:bg-[#3d3d3d] border border-white rounded-sm cursor-pointer"
+        >
+          Add
+        </button>
+      </div>
+
+      <div className="flex flex-col justify-start gap-2">
+        {comments?.map((comment, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-between gap-3 text-white"
+          >
+            <div>{comment?.comment}</div>
+            <button
+              onClick={() => deleteVideoComment(comment?._id)}
+              className="px-2 py-1 bg-red-500 hover:bg-red-600 rounded-sm cursor-pointer"
+            >
+              Delete
+            </button>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

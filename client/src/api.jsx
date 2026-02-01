@@ -40,4 +40,15 @@ export const apiEndpoints = {
   // Dislike Video
   dislikeVideo: (videoId) =>
     api.post(`${BASE_URL}/reactions/video/${videoId}/dislike`),
+
+  // Add Comment
+  addComment: (videoId, body) =>
+    api.post(`${BASE_URL}/comments/${videoId}/add`, body),
+
+  // Delete Comment
+  deleteComment: (commentId) =>
+    api.delete(`${BASE_URL}/comments/${commentId}/delete`),
+
+  // Add Comment
+  allComments: (videoId) => api.get(`${BASE_URL}/comments/${videoId}/all`),
 };
