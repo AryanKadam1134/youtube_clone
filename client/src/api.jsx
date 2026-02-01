@@ -32,4 +32,12 @@ export const apiEndpoints = {
 
   // Single Video
   singleVideo: (videoId) => api.get(`${BASE_URL}/videos/${videoId}/single`),
+
+  // Like Video
+  likeVideo: (videoId) =>
+    api.post(`${BASE_URL}/reactions/video/${videoId}/like`),
+
+  // Dislike Video
+  dislikeVideo: (videoId) =>
+    api.post(`${BASE_URL}/reactions/video/${videoId}/dislike`),
 };
