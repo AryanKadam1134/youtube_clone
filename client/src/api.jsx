@@ -51,4 +51,7 @@ export const apiEndpoints = {
 
   // Add Comment
   allComments: (videoId) => api.get(`${BASE_URL}/comments/${videoId}/all`),
+
+  // Add Comment
+  viewVideo: (videoId) => api.patch(`${BASE_URL}/view_videos/${videoId}`),
 };

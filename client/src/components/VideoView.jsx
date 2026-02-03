@@ -104,10 +104,23 @@ export default function VideoView() {
     }
   };
 
+  const viewVideo = async () => {
+    try {
+      const res = await apiEndpoints.viewVideo(videoId);
+
+      const data = res.data;
+
+      console.log("View Video Data: ", data);
+    } catch (error) {
+      console.error("Error Viewing video: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchVideo();
     fetchVideoComments();
-  }, []);
+    viewVideo();
+  }, [videoId]);
 
   return (
     <div className="flex flex-col gap-5 w-[70%]">
