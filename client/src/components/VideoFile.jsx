@@ -67,7 +67,7 @@ export default function VideoFile({ video, refresh }) {
 
   return (
     <div
-      onClick={() => navigate("/video-view", { state: { videoId: videoId } })}
+      onClick={() => navigate("/video-view", { state: { video_id: videoId } })}
       className="flex items-center justify-center p-2 rounded-md hover:bg-[#212121] cursor-pointer"
     >
       <div className="flex flex-col gap-2 text-sm">

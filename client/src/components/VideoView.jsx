@@ -12,7 +12,7 @@ import { Input } from "antd";
 
 export default function VideoView() {
   const location = useLocation();
-  const videoId = location?.state?.videoId;
+  const videoId = location?.state?.video_id;
 
   const [video, setVideo] = useState(null);
   const [comments, setComments] = useState(null);
@@ -27,7 +27,6 @@ export default function VideoView() {
   const likesCount = video?.likesCount;
   const isDisliked = video?.isDisliked;
   const dislikesCount = video?.dislikesCount;
-  const isPublished = video?.isPublished;
   const ownerName = video?.owner?.username;
   const createdAt = video?.createdAt;
   const timeAgo = dayjs(createdAt).fromNow();
@@ -101,6 +100,24 @@ export default function VideoView() {
       console.log(`${data?.message}: `, data);
     } catch (error) {
       console.error("Couldn't like or dislike video: ", error);
+    }
+  };
+
+  const likeDislikeComment = async (reaction, commentId) => {
+    try {
+      let res;
+      if (reaction == "like") {
+        res = await apiEndpoints.likeComment(commentId);
+      } else if (reaction == "dislike") {
+        res = await apiEndpoints.dislikeComment(commentId);
+      }
+
+      const data = res.data;
+
+      fetchVideoComments();
+      console.log(`${data?.message}: `, data);
+    } catch (error) {
+      console.error("Error liking or disliking the comment: ", error);
     }
   };
 
@@ -183,21 +200,50 @@ export default function VideoView() {
         </button>
       </div>
 
-      <div className="flex flex-col justify-start gap-2">
-        {comments?.map((comment, idx) => (
-          <div
-            key={idx}
-            className="flex items-center justify-between gap-3 text-white"
-          >
-            <div>{comment?.comment}</div>
-            <button
-              onClick={() => deleteVideoComment(comment?._id)}
-              className="px-2 py-1 bg-red-500 hover:bg-red-600 rounded-sm cursor-pointer"
+      <div className="flex flex-col justify-start gap-4">
+        {comments?.map((comment, idx) => {
+          const commentId = comment?._id;
+          const videoComment = comment?.comment;
+          const commentsLikes = comment?.likesCount;
+          const commentsDislikes = comment?.dislikesCount;
+
+          return (
+            <div
+              key={idx}
+              className="flex items-center justify-between gap-3 text-white"
             >
-              Delete
-            </button>
-          </div>
-        ))}
+              <div className="flex flex-col gap-1">
+                <p>{videoComment}</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <ThumbsUp
+                      onClick={() => likeDislikeComment("like", commentId)}
+                      size={18}
+                      className={`${commentsLikes && `fill-white`} cursor-pointer`}
+                    />
+                    <p className="font-semibold text-[12px]">{commentsLikes}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ThumbsDown
+                      onClick={() => likeDislikeComment("dislike", commentId)}
+                      size={18}
+                      className={`${commentsDislikes && `fill-white`} cursor-pointer`}
+                    />
+                    <p className="font-semibold text-[12px]">
+                      {commentsDislikes}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => deleteVideoComment(commentId)}
+                className="px-2 py-1 bg-red-500 hover:bg-red-600 rounded-sm cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
