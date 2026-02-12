@@ -20,6 +20,9 @@ export const apiEndpoints = {
   // Login
   login: (body) => api.post(`${BASE_URL}/users/login`, body),
 
+  // Login
+  logout: () => api.post(`${BASE_URL}/users/logout`),
+
   // All Videos
   getAllVideos: () => api.get(`${BASE_URL}/videos/all`),
 

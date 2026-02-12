@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { apiEndpoints } from "../api";
 
 const AuthContext = createContext();
 
@@ -16,11 +17,17 @@ export function AuthProvider({ children }) {
     sessionStorage.setItem("token", jwt);
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      await apiEndpoints.logout();
+
+      setUser(null);
+      setToken(null);
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+    } catch (error) {
+      console.error("Error Logging out: ", error);
+    }
   };
 
   return (

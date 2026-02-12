@@ -76,7 +76,7 @@ function App() {
           <Route path="/profile-page" element={<ProfilePage />} />
         </Route>
 
-        <Route element={token ? <WideView /> : <Navigate to="/home" />}>
+        <Route element={<WideView />}>
           <Route path="/video-view" element={<VideoView />} />
         </Route>
 
