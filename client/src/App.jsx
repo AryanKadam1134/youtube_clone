@@ -7,7 +7,7 @@ import {
   Outlet,
 } from "react-router-dom"; // React Router Dom
 
-import Sidebar from "./pages/private/Sidebar";
+import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/private/Dashboard";
 import ProfilePage from "./pages/private/ProfilePage";
 
