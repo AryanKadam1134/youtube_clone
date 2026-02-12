@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Select } from "antd";
 import { apiEndpoints } from "../../api";
-import VideoFile from "../../components/VideoFile";
+import VideoCard from "../../components/VideoCard";
 
 export default function ProfilePage() {
   const [myAllVideos, setMyAllVideos] = useState([]);
@@ -45,7 +45,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-3 gap-3 bg-[#0f0f0f]">
         {myAllVideos?.map((video, idx) => (
           <div key={idx}>
-            <VideoFile video={video} refresh={getAllMyVideos} />
+            <VideoCard video={video} refresh={getAllMyVideos} />
           </div>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { Input } from "antd";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 import dayjs from "dayjs";
@@ -8,27 +9,35 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
 import { apiEndpoints } from "../api";
-import { Input } from "antd";
+import SideVideoBar from "./SideVideoBar";
 
 export default function VideoView() {
   const location = useLocation();
   const videoId = location?.state?.video_id;
 
-  const [video, setVideo] = useState(null);
+  const [video, setVideo] = useState({});
   const [comments, setComments] = useState(null);
-  const [addComment, setAddComment] = useState(null);
+  const [addComment, setAddComment] = useState("");
 
-  const video_Id = video?._id;
-  const videoTitle = video?.title;
-  const videoViews = video?.views;
-  const videoFile = video?.videoFile?.url;
-  const videoOwnerAvatar = video?.owner?.avatar?.url;
-  const isLiked = video?.isLiked;
-  const likesCount = video?.likesCount;
-  const isDisliked = video?.isDisliked;
-  const dislikesCount = video?.dislikesCount;
-  const ownerName = video?.owner?.username;
-  const createdAt = video?.createdAt;
+  const {
+    _id,
+    title,
+    views,
+    isLiked,
+    likesCount,
+    isDisliked,
+    dislikesCount,
+    createdAt,
+    videoFile,
+    owner,
+  } = video;
+
+  const { url: viedoUrl } = videoFile || {};
+
+  const { username, avatar } = owner || {};
+
+  const { url: avatarUrl } = avatar || {};
+
   const timeAgo = dayjs(createdAt).fromNow();
 
   const fetchVideo = async () => {
@@ -65,6 +74,7 @@ export default function VideoView() {
 
       const data = res.data;
 
+      setAddComment("");
       fetchVideoComments();
       console.log("Comment Added: ", data);
     } catch (error) {
@@ -140,110 +150,178 @@ export default function VideoView() {
   }, [videoId]);
 
   return (
-    <div className="flex flex-col gap-5 w-[70%]">
-      <div className="flex flex-col items-start gap-2 text-sm">
-        <video className="w-full" src={videoFile} controls />
+    <div className="flex gap-6 p-6 bg-[#0f0f0f] min-h-screen">
+      {/* Main Content */}
+      <div className="flex flex-col gap-4 flex-1 max-w-[1280px]">
+        {/* Video Player */}
+        <div className="bg-black rounded-xl overflow-hidden">
+          <video className="w-full aspect-video" src={viedoUrl} controls />
+        </div>
 
-        <div className="flex items-start justify-between w-full">
-          <div className="flex justify-start items-start gap-2">
-            <img
-              src={videoOwnerAvatar}
-              alt="User Avatar"
-              className="size-[30px] mt-1 rounded-full object-cover"
-            />
+        {/* Video Info */}
+        <div className="flex flex-col gap-3">
+          <h1 className="text-white text-xl font-semibold">{title}</h1>
 
-            <div className="flex flex-col justify-center items-start gap-0.5 text-white">
-              <p className="font-semibold text-[14px]">{videoTitle}</p>
-              <p className="text-[#aaaaaa] hover:text-white text-[11px] cursor-pointer">
-                {ownerName}
-              </p>
-              <p className="text-[#aaaaaa] text-[11px]">
-                {videoViews} views • {timeAgo}
-              </p>
+          <div className="flex items-center justify-between">
+            {/* Channel Info */}
+            <div className="flex items-center gap-3">
+              <img
+                src={avatarUrl}
+                alt="User Avatar"
+                className="size-10 rounded-full object-cover"
+              />
+
+              <div className="flex flex-col">
+                <p className="text-white font-medium text-sm">{username}</p>
+                <p className="text-[#aaaaaa] text-xs">
+                  {views?.toLocaleString()} views • {timeAgo}
+                </p>
+              </div>
+            </div>
+
+            {/* Like/Dislike Buttons */}
+            <div className="flex items-center gap-1 bg-[#272727] rounded-full overflow-hidden">
+              <button
+                onClick={() => likeDislikeVideo("like", videoId)}
+                className="flex items-center gap-2 px-4 py-2 hover:bg-[#3d3d3d] transition-colors"
+              >
+                <ThumbsUp
+                  size={20}
+                  className={`${
+                    isLiked ? "fill-white" : ""
+                  } text-white cursor-pointer`}
+                />
+                <span className="text-white text-sm font-medium">
+                  {likesCount}
+                </span>
+              </button>
+
+              <div className="w-[1px] h-6 bg-[#3d3d3d]" />
+
+              <button
+                onClick={() => likeDislikeVideo("dislike", videoId)}
+                className="flex items-center gap-2 px-4 py-2 hover:bg-[#3d3d3d] transition-colors"
+              >
+                <ThumbsDown
+                  size={20}
+                  className={`${
+                    isDisliked ? "fill-white" : ""
+                  } text-white cursor-pointer`}
+                />
+                <span className="text-white text-sm font-medium">
+                  {dislikesCount}
+                </span>
+              </button>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-5 px-2 py-1.5 text-white bg-[#3d3d3d] rounded-full">
-            <div className="flex items-center justify-center gap-2">
-              <ThumbsUp
-                onClick={() => likeDislikeVideo("like", videoId)}
-                size={22}
-                className={`${isLiked && `fill-white`} cursor-pointer`}
+        {/* Comments Section */}
+        <div className="flex flex-col gap-6 mt-4">
+          <h2 className="text-white text-lg font-semibold">
+            {comments?.length || 0} Comments
+          </h2>
+
+          {/* Add Comment */}
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <Input
+                value={addComment}
+                placeholder="Add a comment..."
+                onChange={(e) => setAddComment(e.target.value)}
+                onPressEnter={addVideoComment}
+                className="bg-transparent border-0 border-b border-[#3d3d3d] text-white placeholder-[#aaaaaa] rounded-none focus:border-white"
+                style={{
+                  background: "transparent",
+                  color: "white",
+                }}
               />
-              <p className="font-semibold text-[12px]">{likesCount}</p>
             </div>
 
-            <div className="flex items-center justify-center gap-2">
-              <ThumbsDown
-                onClick={() => likeDislikeVideo("dislike", videoId)}
-                size={22}
-                className={`${isDisliked && `fill-white`} cursor-pointer`}
-              />
-              <p className="font-semibold text-[12px]">{dislikesCount}</p>
-            </div>
+            <button
+              onClick={addVideoComment}
+              disabled={!addComment.trim()}
+              className="px-4 py-2 bg-[#3ea6ff] hover:bg-[#3ea6ff]/90 disabled:bg-[#3d3d3d] disabled:text-[#717171] disabled:cursor-not-allowed text-black font-medium rounded-full transition-colors"
+            >
+              Comment
+            </button>
+          </div>
+
+          {/* Comments List */}
+          <div className="flex flex-col gap-4">
+            {comments?.map((comment, idx) => {
+              const commentId = comment?._id;
+              const videoComment = comment?.comment;
+              const commentsLikes = comment?.likesCount;
+              const commentsDislikes = comment?.dislikesCount;
+              const isCommentLiked = comment?.isLiked;
+              const isCommentDisliked = comment?.isDisliked;
+
+              return (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-[#272727] transition-colors"
+                >
+                  <div className="flex-1 flex flex-col gap-2">
+                    <p className="text-white text-sm leading-relaxed">
+                      {videoComment}
+                    </p>
+
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => likeDislikeComment("like", commentId)}
+                        className="flex items-center gap-1.5 hover:bg-[#3d3d3d] px-2 py-1 rounded-full transition-colors"
+                      >
+                        <ThumbsUp
+                          size={16}
+                          className={`${
+                            isCommentLiked ? "fill-white" : ""
+                          } text-white cursor-pointer`}
+                        />
+                        <span className="text-[#aaaaaa] text-xs font-medium">
+                          {commentsLikes || 0}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => likeDislikeComment("dislike", commentId)}
+                        className="flex items-center gap-1.5 hover:bg-[#3d3d3d] px-2 py-1 rounded-full transition-colors"
+                      >
+                        <ThumbsDown
+                          size={16}
+                          className={`${
+                            isCommentDisliked ? "fill-white" : ""
+                          } text-white cursor-pointer`}
+                        />
+                        <span className="text-[#aaaaaa] text-xs font-medium">
+                          {commentsDislikes || 0}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => deleteVideoComment(commentId)}
+                    className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-full transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
+
+            {comments?.length === 0 && (
+              <div className="text-center py-8 text-[#aaaaaa]">
+                No comments yet. Be the first to comment!
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-start items-center gap-3">
-        <Input
-          style={{ width: 200 }}
-          placeholder="Add Comment"
-          onChange={(e) => setAddComment(e.target.value)}
-        />
-
-        <button
-          onClick={addVideoComment}
-          className="px-2 py-1 text-white hover:bg-[#3d3d3d] border border-white rounded-sm cursor-pointer"
-        >
-          Add
-        </button>
-      </div>
-
-      <div className="flex flex-col justify-start gap-4">
-        {comments?.map((comment, idx) => {
-          const commentId = comment?._id;
-          const videoComment = comment?.comment;
-          const commentsLikes = comment?.likesCount;
-          const commentsDislikes = comment?.dislikesCount;
-
-          return (
-            <div
-              key={idx}
-              className="flex items-center justify-between gap-3 text-white"
-            >
-              <div className="flex flex-col gap-1">
-                <p>{videoComment}</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <ThumbsUp
-                      onClick={() => likeDislikeComment("like", commentId)}
-                      size={18}
-                      className={`${commentsLikes && `fill-white`} cursor-pointer`}
-                    />
-                    <p className="font-semibold text-[12px]">{commentsLikes}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ThumbsDown
-                      onClick={() => likeDislikeComment("dislike", commentId)}
-                      size={18}
-                      className={`${commentsDislikes && `fill-white`} cursor-pointer`}
-                    />
-                    <p className="font-semibold text-[12px]">
-                      {commentsDislikes}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => deleteVideoComment(commentId)}
-                className="px-2 py-1 bg-red-500 hover:bg-red-600 rounded-sm cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          );
-        })}
+      {/* Side Video Bar */}
+      <div className="w-[400px] flex-shrink-0">
+        <SideVideoBar currentVideoId={videoId} />
       </div>
     </div>
   );
