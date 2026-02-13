@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
   Outlet,
-} from "react-router-dom"; // React Router Dom
+} from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/private/Dashboard";
@@ -17,43 +17,48 @@ import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
 import VideoView from "./components/VideoView";
 
-function CommonView() {
-  return (
-    <div className="flex flex-col items-start">
-      <Header />
+function App() {
+  const { token } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-      <div className="flex items-start">
-        <Sidebar />
-        <div className="p-5 bg-[#0f0f0f]">
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  function CommonView() {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Header toggleSidebar={toggleSidebar} />
+
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar isOpen={isSidebarOpen} />
+          <div className="flex-1 overflow-y-auto bg-[#0f0f0f]">
+            <Outlet />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function WideView() {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Header toggleSidebar={toggleSidebar} />
+
+        <div className="flex-1 overflow-y-auto bg-[#0f0f0f]">
           <Outlet />
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function WideView() {
-  return (
-    <div className="flex flex-col items-start w-full">
-      <Header />
+  function AuthenticatedLayout() {
+    return <CommonView />;
+  }
 
-      <div className="p-5 bg-[#0f0f0f] w-full">
-        <Outlet />
-      </div>
-    </div>
-  );
-}
-
-function AuthenticatedLayout() {
-  return <CommonView />;
-}
-
-function UnauthenticatedLayout() {
-  return <CommonView />;
-}
-
-function App() {
-  const { token } = useAuth();
+  function UnauthenticatedLayout() {
+    return <CommonView />;
+  }
 
   return (
     <Router>
