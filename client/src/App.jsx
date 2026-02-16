@@ -16,6 +16,7 @@ import Login from "./pages/authentication/Login";
 import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
 import VideoView from "./components/VideoView";
+import WatchHistory from "./pages/private/WatchHistory";
 
 // Move layout components outside App to prevent recreation
 function CommonView({ toggleSidebar, isSidebarOpen }) {
@@ -81,6 +82,7 @@ function App() {
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-page" element={<ProfilePage />} />
+          <Route path="/watch-history" element={<WatchHistory />} />
         </Route>
 
         <Route element={<WideView toggleSidebar={toggleSidebar} />}>

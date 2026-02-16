@@ -26,7 +26,7 @@ export default function ProfilePage() {
   }, [filter]);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 p-6">
       <div className="flex justify-between items-center">
         <p className="text-white">Your Videos</p>
         <Select
@@ -42,7 +42,7 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3 bg-[#0f0f0f]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {myAllVideos?.map((video, idx) => (
           <div key={idx}>
             <VideoCard video={video} refresh={getAllMyVideos} />

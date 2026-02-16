@@ -1,17 +1,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  History, 
-  PlaySquare, 
-  Clock, 
-  ThumbsUp, 
+import {
+  Home,
+  History,
+  PlaySquare,
+  Clock,
+  ThumbsUp,
   ListVideo,
   TrendingUp,
   Music,
   Gamepad2,
   Trophy,
-  Lightbulb
+  Lightbulb,
 } from "lucide-react";
 
 export default function Sidebar({ isOpen }) {
@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen }) {
 
   const libraryItems = [
     { icon: ListVideo, label: "Library", path: "/library" },
-    { icon: History, label: "History", path: "/history" },
+    { icon: History, label: "History", path: "/watch-history" },
     { icon: Clock, label: "Watch Later", path: "/watch-later" },
     { icon: ThumbsUp, label: "Liked Videos", path: "/liked" },
   ];
@@ -37,9 +37,9 @@ export default function Sidebar({ isOpen }) {
     { icon: Lightbulb, label: "Learning", path: "/learning" },
   ];
 
-  const SidebarItem = ({ icon: Icon, label, path, onClick }) => (
+  const SidebarItem = ({ icon: Icon, label, path }) => (
     <div
-      onClick={() => onClick ? onClick() : navigate(path)}
+      onClick={() => path && navigate(path)}
       className={`flex items-center gap-6 px-3 py-2.5 hover:bg-[#3D3D3D] rounded-lg cursor-pointer transition-colors group ${
         !isOpen && "justify-center"
       }`}
