@@ -20,8 +20,11 @@ export const apiEndpoints = {
   // Login
   login: (body) => api.post(`${BASE_URL}/users/login`, body),
 
-  // Login
+  // Logout
   logout: () => api.post(`${BASE_URL}/users/logout`),
+
+  // Login
+  getWatchHistory: () => api.get(`${BASE_URL}/users/me/watch-history`),
 
   // All Videos
   getAllVideos: () => api.get(`${BASE_URL}/videos/all`),
