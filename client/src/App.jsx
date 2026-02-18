@@ -84,11 +84,11 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-page" element={<ProfilePage />} />
           <Route path="/watch-history" element={<WatchHistory />} />
+          <Route path="/user-channel" element={<ChannelPage />} />
         </Route>
 
         <Route element={<WideView toggleSidebar={toggleSidebar} />}>
           <Route path="/video-view" element={<VideoView />} />
-          <Route path="/user-channel" element={<ChannelPage />} />
         </Route>
 
         {/* Unauthenticated Routes with Header */}
