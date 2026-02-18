@@ -15,57 +15,58 @@ const api = axios.create({
 
 export const apiEndpoints = {
   // Register
-  register: (data) => api.post(`${BASE_URL}/users/register`, data),
+  register: (data) => api.post(`/users/register`, data),
 
   // Login
-  login: (body) => api.post(`${BASE_URL}/users/login`, body),
+  login: (body) => api.post(`/users/login`, body),
 
   // Logout
-  logout: () => api.post(`${BASE_URL}/users/logout`),
+  logout: () => api.post(`/users/logout`),
 
   // Login
-  getWatchHistory: () => api.get(`${BASE_URL}/users/me/watch-history`),
+  getWatchHistory: () => api.get(`/users/me/watch-history`),
 
   // All Videos
-  getAllVideos: () => api.get(`${BASE_URL}/videos/all`),
+  getAllVideos: () => api.get(`/videos/all`),
 
   // All Current User Videos
-  getAllMyVideos: (params) => api.get(`${BASE_URL}/videos/me/all`, { params }),
+  getAllMyVideos: (params) => api.get(`/videos/me/all`, { params }),
+
+  // User Details
+  getUserChannelDetails: (userId) => api.get(`/users/${userId}/channel`),
+
+  // User Channel Details
+  getUserChannelVideos: (userId) => api.get(`/videos/${userId}`),
 
   // All Current User Videos
   updateVideoDetails: (videoId, body) =>
-    api.patch(`${BASE_URL}/videos/${videoId}/update_video`, body),
+    api.patch(`/videos/${videoId}/update_video`, body),
 
   // Single Video
-  singleVideo: (videoId) => api.get(`${BASE_URL}/videos/${videoId}/single`),
+  singleVideo: (videoId) => api.get(`/videos/${videoId}/single`),
 
   // Like Video
-  likeVideo: (videoId) =>
-    api.post(`${BASE_URL}/reactions/video/${videoId}/like`),
+  likeVideo: (videoId) => api.post(`/reactions/video/${videoId}/like`),
 
   // Dislike Video
-  dislikeVideo: (videoId) =>
-    api.post(`${BASE_URL}/reactions/video/${videoId}/dislike`),
+  dislikeVideo: (videoId) => api.post(`/reactions/video/${videoId}/dislike`),
 
   // Add Comment
-  addComment: (videoId, body) =>
-    api.post(`${BASE_URL}/comments/${videoId}/add`, body),
+  addComment: (videoId, body) => api.post(`/comments/${videoId}/add`, body),
 
   // Delete Comment
-  deleteComment: (commentId) =>
-    api.delete(`${BASE_URL}/comments/${commentId}/delete`),
+  deleteComment: (commentId) => api.delete(`/comments/${commentId}/delete`),
 
   // Add Comment
-  allComments: (videoId) => api.get(`${BASE_URL}/comments/${videoId}/all`),
+  allComments: (videoId) => api.get(`/comments/${videoId}/all`),
 
   // View Video
-  viewVideo: (videoId) => api.patch(`${BASE_URL}/view_videos/${videoId}`),
+  viewVideo: (videoId) => api.patch(`/view_videos/${videoId}`),
 
   // View Video
-  likeComment: (commentId) =>
-    api.post(`${BASE_URL}/reactions/comment/${commentId}/like`),
+  likeComment: (commentId) => api.post(`/reactions/comment/${commentId}/like`),
 
   // View Video
   dislikeComment: (commentId) =>
-    api.post(`${BASE_URL}/reactions/comment/${commentId}/dislike`),
+    api.post(`/reactions/comment/${commentId}/dislike`),
 };

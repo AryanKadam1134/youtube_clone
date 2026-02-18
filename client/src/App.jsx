@@ -17,6 +17,7 @@ import Header from "./components/Header";
 import { useAuth } from "./context/AuthContext";
 import VideoView from "./components/VideoView";
 import WatchHistory from "./pages/private/WatchHistory";
+import ChannelPage from "./pages/public/ChannelPage";
 
 // Move layout components outside App to prevent recreation
 function CommonView({ toggleSidebar, isSidebarOpen }) {
@@ -87,6 +88,7 @@ function App() {
 
         <Route element={<WideView toggleSidebar={toggleSidebar} />}>
           <Route path="/video-view" element={<VideoView />} />
+          <Route path="/user-channel" element={<ChannelPage />} />
         </Route>
 
         {/* Unauthenticated Routes with Header */}

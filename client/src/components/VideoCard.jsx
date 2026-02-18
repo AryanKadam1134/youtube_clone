@@ -94,6 +94,10 @@ export default function VideoCard({ video, refresh }) {
           <img
             src={avatarUrl}
             alt={username}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/user-channel", { state: { id: ownerId } });
+            }}
             className="size-9 rounded-full object-cover flex-shrink-0 mt-0.5"
           />
 
@@ -103,7 +107,13 @@ export default function VideoCard({ video, refresh }) {
               {title}
             </h3>
 
-            <p className="text-[#aaaaaa] hover:text-white text-xs mb-0.5 cursor-pointer transition-colors">
+            <p
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate("/user-channel", { state: { id: ownerId } });
+              }}
+              className="text-[#aaaaaa] hover:text-white text-xs mb-0.5 cursor-pointer transition-colors"
+            >
               {username}
             </p>
 
