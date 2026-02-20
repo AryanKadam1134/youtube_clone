@@ -69,4 +69,10 @@ export const apiEndpoints = {
   // View Video
   dislikeComment: (commentId) =>
     api.post(`/reactions/comment/${commentId}/dislike`),
+
+  // Subscribe Channel
+  subscribeChannel: (userId) => api.post(`/subscriptions/${userId}/subscribe`),
+
+  // Unsubscribe Channel
+  unsubscribeChannel: (userId) => api.post(`/subscriptions/${userId}/unsubscribe`),
 };

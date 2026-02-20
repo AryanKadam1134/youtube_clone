@@ -18,6 +18,16 @@ export default function ChannelPage() {
   const [activeTab, setActiveTab] = useState("videos");
   const [loading, setLoading] = useState(true);
 
+  const {
+    username,
+    fullName,
+    email,
+    avatar,
+    coverImage,
+    isSubscribed,
+    subscribersCount,
+  } = userDetails;
+
   const fetchUserDetails = async () => {
     try {
       const res = await apiEndpoints.getUserChannelDetails(userId);
@@ -48,10 +58,19 @@ export default function ChannelPage() {
 
   const handleSubscribe = async () => {
     try {
-      // Add your subscribe API call here
-      console.log("Subscribe to channel:", userId);
+      let res;
+      if (isSubscribed) {
+        res = await apiEndpoints.unsubscribeChannel(userId);
+      } else {
+        res = await apiEndpoints.subscribeChannel(userId);
+      }
+
+      const data = res?.data;
+
+      fetchUserDetails();
+      console.log("Subscribed to Channel: ", data);
     } catch (error) {
-      console.error("Error subscribing:", error);
+      console.error("Error Subscribing to Channel: ", error);
     }
   };
 
@@ -61,16 +80,6 @@ export default function ChannelPage() {
       fetchUserVideos();
     }
   }, [userId]);
-
-  const {
-    username,
-    fullName,
-    email,
-    avatar,
-    coverImage,
-    isSubscribed,
-    subscribersCount,
-  } = userDetails;
 
   const tabs = [
     { id: "videos", label: "Videos" },
@@ -127,7 +136,7 @@ export default function ChannelPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleSubscribe}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-medium transition-colors ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-medium transition-colors cursor-pointer ${
                   isSubscribed
                     ? "bg-[#272727] text-white hover:bg-[#3d3d3d]"
                     : "bg-white text-black hover:bg-white/90"
